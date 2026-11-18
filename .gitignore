@@ -1,0 +1,26 @@
+# Dependencies & Virtual Environments (Constitution Principle II)
+node_modules/
+.venv/
+venv/
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# Logs & Environment files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+.env.*
+!.env.example
+
+# OS & Editor artifacts
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+.vscode/
+.idea/

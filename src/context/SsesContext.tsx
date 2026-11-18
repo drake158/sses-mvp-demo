@@ -1,0 +1,972 @@
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import {
+  buildInitialSsesState,
+  SSES_SCHEMA_VERSION,
+} from '../data/seedData';
+import type {
+  Acompanamiento,
+  AcompanamientoInput,
+  AuditLogEntry,
+  BulkLinkResult,
+  ConstanciaReporte,
+  EstadoSemana,
+  Estrategia,
+  EstrategiaInput,
+  IntegrityCheckResult,
+  MutationResult,
+  OfflineQueueItem,
+  RolUsuario,
+  SemanaSeguimiento,
+  SsesState,
+  SyncResult,
+  TipoAccionAuditoria,
+} from '../types/sses';
+import {
+  aplicarEdicionEstrategia,
+  generarCuatroSemanasPendientes,
+  validarAcompanamientoInput,
+  validarAvanceSemanal,
+  validarEstrategiaInput,
+  vincularEstudiantesAEstrategia,
+} from '../utils/businessRules';
+import {
+  computeAuditEntryHash,
+  GENESIS_HASH,
+  verifyAuditChain,
+} from '../utils/crypto';
+import {
+  buildComplianceCsvReport,
+  triggerCsvDownload,
+} from '../utils/csvExport';
+
+export const STORAGE_KEY = 'sses_mvp_state_v1';
+
+function generateIdempotencyKey(prefix: string): string {
+  if (typeof globalThis.crypto?.randomUUID === 'function') {
+    return `${prefix}-${globalThis.crypto.randomUUID()}`;
+  }
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function isValidSsesState(candidate: unknown): candidate is SsesState {
+  if (!candidate || typeof candidate !== 'object') {
+    return false;
+  }
+  const s = candidate as Partial<SsesState>;
+  return (
+    s.version === SSES_SCHEMA_VERSION &&
+    Array.isArray(s.entidades) &&
+    Array.isArray(s.estudiantes) &&
+    Array.isArray(s.docentes) &&
+    Array.isArray(s.tutores) &&
+    Array.isArray(s.estrategias) &&
+    Array.isArray(s.acompanamientos) &&
+    Array.isArray(s.constanciasReportes) &&
+    Array.isArray(s.auditLog) &&
+    Array.isArray(s.offlineQueue) &&
+    Array.isArray(s.processedIdempotencyKeys) &&
+    typeof s.isOffline === 'boolean'
+  );
+}
+
+function readStoredState(): SsesState | null {
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return null;
+    }
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      return null;
+    }
+    const parsed: unknown = JSON.parse(raw);
+    return isValidSsesState(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function persistState(state: SsesState): void {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+  } catch {
+    // Graceful degradation if storage quota is exceeded in private browsing
+  }
+}
+
+interface AuditEventDescriptor {
+  rol: RolUsuario;
+  accion: TipoAccionAuditoria;
+  entidadAfectada: string;
+  registroId: string;
+  valoresAnteriores: Record<string, unknown> | null;
+  valoresNuevos: Record<string, unknown> | null;
+}
+
+export interface SsesContextValue {
+  state: SsesState;
+  rolActivo: RolUsuario | null;
+  isReady: boolean;
+  seleccionarRol: (rol: RolUsuario | null) => void;
+  toggleModoOffline: () => Promise<SyncResult | null>;
+  crearEstrategia: (input: EstrategiaInput) => Promise<MutationResult<Estrategia>>;
+  editarEstrategia: (
+    estrategiaId: string,
+    cambios: EstrategiaInput
+  ) => Promise<MutationResult<Estrategia>>;
+  vincularEstudiantes: (
+    estrategiaId: string,
+    documentos: string[]
+  ) => Promise<MutationResult<BulkLinkResult>>;
+  registrarAcompanamiento: (
+    input: AcompanamientoInput
+  ) => Promise<MutationResult<Acompanamiento>>;
+  actualizarAvanceSemanal: (
+    acompanamientoId: string,
+    semanaId: string,
+    estado: EstadoSemana,
+    motivo?: string
+  ) => Promise<MutationResult<SemanaSeguimiento>>;
+  sincronizarColaOffline: () => Promise<SyncResult>;
+  generarYDescargarReporteCsv: (
+    rol: 'FUNCIONARIO_MEN' | 'ENTE_CONTROL'
+  ) => Promise<ConstanciaReporte>;
+  verificarIntegridadCadena: () => Promise<IntegrityCheckResult>;
+  simularAlteracionAuditoria: () => Promise<{ alteredEntryId: string } | null>;
+  restaurarDatosDeFabrica: () => Promise<void>;
+}
+
+const EMPTY_STATE: SsesState = {
+  version: SSES_SCHEMA_VERSION,
+  entidades: [],
+  estudiantes: [],
+  docentes: [],
+  tutores: [],
+  estrategias: [],
+  acompanamientos: [],
+  constanciasReportes: [],
+  auditLog: [],
+  offlineQueue: [],
+  processedIdempotencyKeys: [],
+  isOffline: false,
+};
+
+const SsesContext = createContext<SsesContextValue | undefined>(undefined);
+
+export const SsesProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [state, setState] = useState<SsesState>(EMPTY_STATE);
+  const [rolActivo, setRolActivo] = useState<RolUsuario | null>(null);
+  const [isReady, setIsReady] = useState<boolean>(false);
+
+  const stateRef = useRef<SsesState>(EMPTY_STATE);
+  const mutationQueueRef = useRef<Promise<void>>(Promise.resolve());
+
+  const applyNewState = useCallback((next: SsesState) => {
+    stateRef.current = next;
+    setState(next);
+    persistState(next);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    async function bootstrap() {
+      const stored = readStoredState();
+      if (stored) {
+        if (active) {
+          stateRef.current = stored;
+          setState(stored);
+          setIsReady(true);
+        }
+        return;
+      }
+
+      const initial = await buildInitialSsesState();
+      if (active) {
+        applyNewState(initial);
+        setIsReady(true);
+      }
+    }
+
+    void bootstrap();
+
+    return () => {
+      active = false;
+    };
+  }, [applyNewState]);
+
+  /**
+   * Serializes all state mutations through a FIFO promise queue so each
+   * async Web Crypto SHA-256 audit entry chains cleanly from the latest hash.
+   */
+  const enqueueMutation = useCallback(
+    <T,>(task: () => Promise<T>): Promise<T> => {
+      const resultPromise = mutationQueueRef.current.then(task, task);
+      mutationQueueRef.current = resultPromise.then(
+        () => undefined,
+        () => undefined
+      );
+      return resultPromise;
+    },
+    []
+  );
+
+  const commitMutation = useCallback(
+    async <T,>(
+      executor: (
+        current: SsesState
+      ) => Promise<{
+        nextState: SsesState;
+        audit: AuditEventDescriptor;
+        result: T;
+      }>
+    ): Promise<T> => {
+      return enqueueMutation(async () => {
+        const current = stateRef.current;
+        const { nextState, audit, result } = await executor(current);
+
+        const lastEntry = nextState.auditLog[nextState.auditLog.length - 1];
+        const secuencia = (lastEntry?.secuencia ?? 0) + 1;
+        const previousHash = lastEntry ? lastEntry.hash : GENESIS_HASH;
+        const auditPayload = {
+          id: `AUD-${String(secuencia).padStart(4, '0')}`,
+          secuencia,
+          timestamp: new Date().toISOString(),
+          rol: audit.rol,
+          accion: audit.accion,
+          entidadAfectada: audit.entidadAfectada,
+          registroId: audit.registroId,
+          valoresAnteriores: audit.valoresAnteriores,
+          valoresNuevos: audit.valoresNuevos,
+          previousHash,
+        };
+
+        const hash = await computeAuditEntryHash(auditPayload);
+        const newEntry: AuditLogEntry = { ...auditPayload, hash };
+
+        const finalState: SsesState = {
+          ...nextState,
+          auditLog: [...nextState.auditLog, newEntry],
+        };
+
+        applyNewState(finalState);
+        return result;
+      });
+    },
+    [applyNewState, enqueueMutation]
+  );
+
+  const seleccionarRol = useCallback((rol: RolUsuario | null) => {
+    setRolActivo(rol);
+  }, []);
+
+  const sincronizarColaOffline = useCallback(async (): Promise<SyncResult> => {
+    return enqueueMutation(async () => {
+      const current = stateRef.current;
+      if (current.offlineQueue.length === 0) {
+        return { syncedCount: 0, skippedDuplicates: 0, remainingCount: 0 };
+      }
+
+      const processedSet = new Set(current.processedIdempotencyKeys);
+      let updatedAcompanamientos = current.acompanamientos;
+      let syncedCount = 0;
+      let skippedDuplicates = 0;
+      const syncedKeys: string[] = [];
+
+      for (const item of current.offlineQueue) {
+        if (processedSet.has(item.idempotencyKey)) {
+          skippedDuplicates += 1;
+          continue;
+        }
+
+        if (item.tipo === 'REGISTRAR_ACOMPANAMIENTO') {
+          updatedAcompanamientos = updatedAcompanamientos.map((acomp) => {
+            if (acomp.id !== item.registroId) {
+              return acomp;
+            }
+            return {
+              ...acomp,
+              estadoSincronizacion: 'SINCRONIZADO',
+              semanas: acomp.semanas.map((sem) => ({
+                ...sem,
+                estadoSincronizacion: 'SINCRONIZADO',
+              })),
+            };
+          });
+        } else if (item.tipo === 'ACTUALIZAR_SEMANA') {
+          const acompId = String(item.payload.acompanamientoId ?? '');
+          const semanaId = String(item.payload.semanaId ?? item.registroId);
+          updatedAcompanamientos = updatedAcompanamientos.map((acomp) => {
+            if (acomp.id !== acompId) {
+              return acomp;
+            }
+            return {
+              ...acomp,
+              semanas: acomp.semanas.map((sem) =>
+                sem.id === semanaId
+                  ? { ...sem, estadoSincronizacion: 'SINCRONIZADO' }
+                  : sem
+              ),
+            };
+          });
+        }
+
+        processedSet.add(item.idempotencyKey);
+        syncedKeys.push(item.idempotencyKey);
+        syncedCount += 1;
+      }
+
+      const nextBase: SsesState = {
+        ...current,
+        acompanamientos: updatedAcompanamientos,
+        offlineQueue: [],
+        processedIdempotencyKeys: Array.from(processedSet),
+      };
+
+      const lastEntry = nextBase.auditLog[nextBase.auditLog.length - 1];
+      const secuencia = (lastEntry?.secuencia ?? 0) + 1;
+      const previousHash = lastEntry ? lastEntry.hash : GENESIS_HASH;
+      const auditPayload = {
+        id: `AUD-${String(secuencia).padStart(4, '0')}`,
+        secuencia,
+        timestamp: new Date().toISOString(),
+        rol: 'TUTOR' as RolUsuario,
+        accion: 'SINCRONIZACION_OFFLINE' as TipoAccionAuditoria,
+        entidadAfectada: 'ColaOffline',
+        registroId: `SYNC-${secuencia}`,
+        valoresAnteriores: {
+          pendientesEnCola: current.offlineQueue.length,
+        },
+        valoresNuevos: {
+          sincronizados: syncedCount,
+          duplicadosOmitidos: skippedDuplicates,
+          idempotencyKeys: syncedKeys,
+        },
+        previousHash,
+      };
+      const hash = await computeAuditEntryHash(auditPayload);
+
+      const finalState: SsesState = {
+        ...nextBase,
+        auditLog: [...nextBase.auditLog, { ...auditPayload, hash }],
+      };
+      applyNewState(finalState);
+
+      return {
+        syncedCount,
+        skippedDuplicates,
+        remainingCount: 0,
+      };
+    });
+  }, [applyNewState, enqueueMutation]);
+
+  const toggleModoOffline = useCallback(async (): Promise<SyncResult | null> => {
+    let becameOnline = false;
+    await enqueueMutation(async () => {
+      const current = stateRef.current;
+      const nextOffline = !current.isOffline;
+      becameOnline = current.isOffline && !nextOffline;
+      applyNewState({
+        ...current,
+        isOffline: nextOffline,
+      });
+    });
+
+    if (becameOnline && stateRef.current.offlineQueue.length > 0) {
+      return sincronizarColaOffline();
+    }
+    return null;
+  }, [applyNewState, enqueueMutation, sincronizarColaOffline]);
+
+  const crearEstrategia = useCallback(
+    async (input: EstrategiaInput): Promise<MutationResult<Estrategia>> => {
+      const validation = validarEstrategiaInput(
+        input,
+        stateRef.current.entidades
+      );
+      if (!validation.valid) {
+        return {
+          ok: false,
+          error: validation.errors[0],
+          errors: validation.errors,
+        };
+      }
+
+      return commitMutation(async (current) => {
+        const recheck = validarEstrategiaInput(input, current.entidades);
+        if (!recheck.valid) {
+          throw new Error(recheck.errors.join(' '));
+        }
+
+        const nextNum = current.estrategias.length + 1;
+        const now = new Date().toISOString();
+        const nueva: Estrategia = {
+          id: `STR-${String(nextNum).padStart(3, '0')}`,
+          nombre: input.nombre.trim(),
+          descripcion: input.descripcion.trim(),
+          entidadId: input.entidadId,
+          fechaInicio: input.fechaInicio,
+          fechaFin: input.fechaFin,
+          estado: 'SIN_ESTUDIANTES',
+          estudianteIds: [],
+          creadaEn: now,
+          actualizadaEn: now,
+        };
+
+        return {
+          nextState: {
+            ...current,
+            estrategias: [...current.estrategias, nueva],
+          },
+          audit: {
+            rol: 'FUNCIONARIO_MEN',
+            accion: 'CREAR_ESTRATEGIA',
+            entidadAfectada: 'Estrategia',
+            registroId: nueva.id,
+            valoresAnteriores: null,
+            valoresNuevos: {
+              id: nueva.id,
+              nombre: nueva.nombre,
+              descripcion: nueva.descripcion,
+              entidadId: nueva.entidadId,
+              fechaInicio: nueva.fechaInicio,
+              fechaFin: nueva.fechaFin,
+              estado: nueva.estado,
+            },
+          },
+          result: { ok: true as const, data: nueva },
+        };
+      }).catch((err: unknown) => ({
+        ok: false as const,
+        error:
+          err instanceof Error ? err.message : 'Error al crear la estrategia.',
+      }));
+    },
+    [commitMutation]
+  );
+
+  const editarEstrategia = useCallback(
+    async (
+      estrategiaId: string,
+      cambios: EstrategiaInput
+    ): Promise<MutationResult<Estrategia>> => {
+      const existing = stateRef.current.estrategias.find(
+        (e) => e.id === estrategiaId
+      );
+      if (!existing) {
+        return { ok: false, error: 'Estrategia no encontrada.' };
+      }
+
+      try {
+        aplicarEdicionEstrategia(existing, cambios, stateRef.current.entidades);
+      } catch (err: unknown) {
+        return {
+          ok: false,
+          error:
+            err instanceof Error
+              ? err.message
+              : 'No se pudo editar la estrategia.',
+        };
+      }
+
+      return commitMutation(async (current) => {
+        const target = current.estrategias.find((e) => e.id === estrategiaId);
+        if (!target) {
+          throw new Error('Estrategia no encontrada.');
+        }
+
+        const actualizada = aplicarEdicionEstrategia(
+          target,
+          cambios,
+          current.entidades
+        );
+
+        return {
+          nextState: {
+            ...current,
+            estrategias: current.estrategias.map((e) =>
+              e.id === estrategiaId ? actualizada : e
+            ),
+          },
+          audit: {
+            rol: 'FUNCIONARIO_MEN',
+            accion: 'EDITAR_ESTRATEGIA',
+            entidadAfectada: 'Estrategia',
+            registroId: actualizada.id,
+            valoresAnteriores: {
+              nombre: target.nombre,
+              descripcion: target.descripcion,
+              entidadId: target.entidadId,
+              fechaInicio: target.fechaInicio,
+              fechaFin: target.fechaFin,
+              estado: target.estado,
+            },
+            valoresNuevos: {
+              nombre: actualizada.nombre,
+              descripcion: actualizada.descripcion,
+              entidadId: actualizada.entidadId,
+              fechaInicio: actualizada.fechaInicio,
+              fechaFin: actualizada.fechaFin,
+              estado: actualizada.estado,
+            },
+          },
+          result: { ok: true as const, data: actualizada },
+        };
+      }).catch((err: unknown) => ({
+        ok: false as const,
+        error:
+          err instanceof Error
+            ? err.message
+            : 'No se pudo editar la estrategia.',
+      }));
+    },
+    [commitMutation]
+  );
+
+  const vincularEstudiantes = useCallback(
+    async (
+      estrategiaId: string,
+      documentos: string[]
+    ): Promise<MutationResult<BulkLinkResult>> => {
+      if (documentos.length === 0) {
+        return {
+          ok: false,
+          error: 'Debe ingresar o seleccionar al menos un documento de estudiante.',
+        };
+      }
+
+      return commitMutation(async (current) => {
+        const target = current.estrategias.find((e) => e.id === estrategiaId);
+        if (!target) {
+          throw new Error('Estrategia no encontrada.');
+        }
+
+        const bulkResult = vincularEstudiantesAEstrategia(
+          target,
+          documentos,
+          current.estudiantes
+        );
+
+        return {
+          nextState: {
+            ...current,
+            estrategias: current.estrategias.map((e) =>
+              e.id === estrategiaId ? bulkResult.estrategiaActualizada : e
+            ),
+          },
+          audit: {
+            rol: 'FUNCIONARIO_MEN',
+            accion: 'VINCULAR_ESTUDIANTES',
+            entidadAfectada: 'Estrategia',
+            registroId: target.id,
+            valoresAnteriores: {
+              estado: target.estado,
+              estudianteIds: target.estudianteIds,
+            },
+            valoresNuevos: {
+              estado: bulkResult.estrategiaActualizada.estado,
+              estudianteIds: bulkResult.estrategiaActualizada.estudianteIds,
+              nuevosVinculados: bulkResult.vinculados.map((v) => v.id),
+              yaVinculados: bulkResult.yaVinculados,
+              rechazadosOtraEntidad: bulkResult.otraEntidad,
+              noEncontrados: bulkResult.noEncontrados,
+            },
+          },
+          result: { ok: true as const, data: bulkResult },
+        };
+      }).catch((err: unknown) => ({
+        ok: false as const,
+        error:
+          err instanceof Error
+            ? err.message
+            : 'No se pudieron vincular los estudiantes.',
+      }));
+    },
+    [commitMutation]
+  );
+
+  const registrarAcompanamiento = useCallback(
+    async (
+      input: AcompanamientoInput
+    ): Promise<MutationResult<Acompanamiento>> => {
+      const estrategia = stateRef.current.estrategias.find(
+        (e) => e.id === input.estrategiaId
+      );
+      if (!estrategia) {
+        return { ok: false, error: 'La estrategia seleccionada no existe.' };
+      }
+
+      const docentesEntidad = stateRef.current.docentes.filter(
+        (d) => d.entidadId === estrategia.entidadId
+      );
+      const validacion = validarAcompanamientoInput(input, docentesEntidad);
+      if (!validacion.valid) {
+        return {
+          ok: false,
+          error: validacion.errors[0],
+          errors: validacion.errors,
+        };
+      }
+
+      return commitMutation(async (current) => {
+        const est = current.estrategias.find(
+          (e) => e.id === input.estrategiaId
+        );
+        if (!est) {
+          throw new Error('La estrategia seleccionada no existe.');
+        }
+
+        const docentesValidos = current.docentes.filter(
+          (d) => d.entidadId === est.entidadId
+        );
+        const recheck = validarAcompanamientoInput(input, docentesValidos);
+        if (!recheck.valid) {
+          throw new Error(recheck.errors.join(' '));
+        }
+
+        const nextNum = current.acompanamientos.length + 1;
+        const acompId = `ACO-${String(nextNum).padStart(3, '0')}`;
+        const idempotencyKey = generateIdempotencyKey('idem-aco');
+        const estadoSincronizacion = current.isOffline
+          ? 'PENDIENTE_SINCRONIZACION'
+          : 'SINCRONIZADO';
+        const now = new Date().toISOString();
+
+        const nuevo: Acompanamiento = {
+          id: acompId,
+          estrategiaId: input.estrategiaId,
+          tutorId: input.tutorId,
+          mes: input.mes,
+          modalidad: input.modalidad,
+          docenteIds: Array.from(new Set(input.docenteIds)),
+          observaciones: input.observaciones.trim(),
+          semanas: generarCuatroSemanasPendientes(
+            acompId,
+            input.mes,
+            estadoSincronizacion
+          ),
+          estadoSincronizacion,
+          idempotencyKey,
+          creadoEn: now,
+        };
+
+        const offlineQueue: OfflineQueueItem[] = current.isOffline
+          ? [
+              ...current.offlineQueue,
+              {
+                idempotencyKey,
+                tipo: 'REGISTRAR_ACOMPANAMIENTO',
+                creadoEn: now,
+                registroId: acompId,
+                payload: {
+                  acompanamientoId: acompId,
+                  estrategiaId: nuevo.estrategiaId,
+                  mes: nuevo.mes,
+                  modalidad: nuevo.modalidad,
+                },
+              },
+            ]
+          : current.offlineQueue;
+
+        const processedIdempotencyKeys = current.isOffline
+          ? current.processedIdempotencyKeys
+          : [...current.processedIdempotencyKeys, idempotencyKey];
+
+        return {
+          nextState: {
+            ...current,
+            acompanamientos: [nuevo, ...current.acompanamientos],
+            offlineQueue,
+            processedIdempotencyKeys,
+          },
+          audit: {
+            rol: 'TUTOR',
+            accion: 'REGISTRAR_ACOMPANAMIENTO',
+            entidadAfectada: 'Acompanamiento',
+            registroId: nuevo.id,
+            valoresAnteriores: null,
+            valoresNuevos: {
+              id: nuevo.id,
+              estrategiaId: nuevo.estrategiaId,
+              tutorId: nuevo.tutorId,
+              mes: nuevo.mes,
+              modalidad: nuevo.modalidad,
+              docenteIds: nuevo.docenteIds,
+              semanasGeneradas: nuevo.semanas.length,
+              estadoSincronizacion: nuevo.estadoSincronizacion,
+              idempotencyKey: nuevo.idempotencyKey,
+            },
+          },
+          result: { ok: true as const, data: nuevo },
+        };
+      }).catch((err: unknown) => ({
+        ok: false as const,
+        error:
+          err instanceof Error
+            ? err.message
+            : 'No se pudo registrar el acompañamiento.',
+      }));
+    },
+    [commitMutation]
+  );
+
+  const actualizarAvanceSemanal = useCallback(
+    async (
+      acompanamientoId: string,
+      semanaId: string,
+      estado: EstadoSemana,
+      motivo?: string
+    ): Promise<MutationResult<SemanaSeguimiento>> => {
+      const validacion = validarAvanceSemanal(estado, motivo);
+      if (!validacion.valid) {
+        return {
+          ok: false,
+          error: validacion.errors[0],
+          errors: validacion.errors,
+        };
+      }
+
+      return commitMutation(async (current) => {
+        const acomp = current.acompanamientos.find(
+          (a) => a.id === acompanamientoId
+        );
+        if (!acomp) {
+          throw new Error('Acompañamiento no encontrado.');
+        }
+
+        const prevSemana = acomp.semanas.find((s) => s.id === semanaId);
+        if (!prevSemana) {
+          throw new Error('Semana de seguimiento no encontrada.');
+        }
+
+        const now = new Date().toISOString();
+        const idempotencyKey = generateIdempotencyKey('idem-sem');
+        const estadoSincronizacion = current.isOffline
+          ? 'PENDIENTE_SINCRONIZACION'
+          : 'SINCRONIZADO';
+
+        const updatedSemana: SemanaSeguimiento = {
+          ...prevSemana,
+          estado,
+          motivoNoRealizado:
+            estado === 'NO_REALIZADO' ? (motivo ?? '').trim() : undefined,
+          estadoSincronizacion,
+          actualizadaEn: now,
+        };
+
+        const updatedAcompanamientos = current.acompanamientos.map((a) =>
+          a.id === acompanamientoId
+            ? {
+                ...a,
+                semanas: a.semanas.map((s) =>
+                  s.id === semanaId ? updatedSemana : s
+                ),
+              }
+            : a
+        );
+
+        const offlineQueue: OfflineQueueItem[] = current.isOffline
+          ? [
+              ...current.offlineQueue,
+              {
+                idempotencyKey,
+                tipo: 'ACTUALIZAR_SEMANA',
+                creadoEn: now,
+                registroId: semanaId,
+                payload: {
+                  acompanamientoId,
+                  semanaId,
+                  estado,
+                  motivoNoRealizado: updatedSemana.motivoNoRealizado ?? null,
+                },
+              },
+            ]
+          : current.offlineQueue;
+
+        const processedIdempotencyKeys = current.isOffline
+          ? current.processedIdempotencyKeys
+          : [...current.processedIdempotencyKeys, idempotencyKey];
+
+        return {
+          nextState: {
+            ...current,
+            acompanamientos: updatedAcompanamientos,
+            offlineQueue,
+            processedIdempotencyKeys,
+          },
+          audit: {
+            rol: 'TUTOR',
+            accion: 'ACTUALIZAR_SEMANA',
+            entidadAfectada: 'SemanaSeguimiento',
+            registroId: semanaId,
+            valoresAnteriores: {
+              estado: prevSemana.estado,
+              motivoNoRealizado: prevSemana.motivoNoRealizado ?? null,
+              estadoSincronizacion: prevSemana.estadoSincronizacion,
+            },
+            valoresNuevos: {
+              estado: updatedSemana.estado,
+              motivoNoRealizado: updatedSemana.motivoNoRealizado ?? null,
+              estadoSincronizacion: updatedSemana.estadoSincronizacion,
+              idempotencyKey,
+            },
+          },
+          result: { ok: true as const, data: updatedSemana },
+        };
+      }).catch((err: unknown) => ({
+        ok: false as const,
+        error:
+          err instanceof Error
+            ? err.message
+            : 'No se pudo actualizar el avance semanal.',
+      }));
+    },
+    [commitMutation]
+  );
+
+  const generarYDescargarReporteCsv = useCallback(
+    async (
+      rol: 'FUNCIONARIO_MEN' | 'ENTE_CONTROL'
+    ): Promise<ConstanciaReporte> => {
+      return commitMutation(async (current) => {
+        const { csvContent, constancia } = await buildComplianceCsvReport(
+          current,
+          rol
+        );
+        triggerCsvDownload(constancia.nombreArchivo, csvContent);
+
+        return {
+          nextState: {
+            ...current,
+            constanciasReportes: [constancia, ...current.constanciasReportes],
+          },
+          audit: {
+            rol,
+            accion: 'GENERAR_REPORTE_CSV',
+            entidadAfectada: 'ConstanciaReporte',
+            registroId: constancia.id,
+            valoresAnteriores: null,
+            valoresNuevos: {
+              id: constancia.id,
+              nombreArchivo: constancia.nombreArchivo,
+              enmascaradoLey1581: constancia.enmascaradoLey1581,
+              totalRegistros: constancia.totalRegistros,
+              sha256: constancia.sha256,
+            },
+          },
+          result: constancia,
+        };
+      });
+    },
+    [commitMutation]
+  );
+
+  const verificarIntegridadCadena =
+    useCallback(async (): Promise<IntegrityCheckResult> => {
+      return verifyAuditChain(stateRef.current.auditLog);
+    }, []);
+
+  /**
+   * Demo-only helper (FR-027) to tamper with an audit entry's payload without
+   * recalculating its SHA-256 hash, proving live tamper detection.
+   * Cleanly reversible via `restaurarDatosDeFabrica`.
+   */
+  const simularAlteracionAuditoria = useCallback(async (): Promise<{
+    alteredEntryId: string;
+  } | null> => {
+    return enqueueMutation(async () => {
+      const current = stateRef.current;
+      if (current.auditLog.length === 0) {
+        return null;
+      }
+
+      const targetIndex = current.auditLog.length >= 2 ? 1 : 0;
+      const targetEntry = current.auditLog[targetIndex];
+      const tamperedAuditLog = current.auditLog.map((entry, idx) => {
+        if (idx !== targetIndex) {
+          return entry;
+        }
+        return {
+          ...entry,
+          valoresNuevos: {
+            ...(entry.valoresNuevos ?? {}),
+            __alteracionDemoSimulada:
+              'VALOR_MODIFICADO_SIN_AUTORIZACION_PARA_DEMO',
+          },
+        };
+      });
+
+      applyNewState({
+        ...current,
+        auditLog: tamperedAuditLog,
+      });
+
+      return { alteredEntryId: targetEntry.id };
+    });
+  }, [applyNewState, enqueueMutation]);
+
+  const restaurarDatosDeFabrica = useCallback(async (): Promise<void> => {
+    return enqueueMutation(async () => {
+      const freshState = await buildInitialSsesState();
+      applyNewState(freshState);
+    });
+  }, [applyNewState, enqueueMutation]);
+
+  const value = useMemo<SsesContextValue>(
+    () => ({
+      state,
+      rolActivo,
+      isReady,
+      seleccionarRol,
+      toggleModoOffline,
+      crearEstrategia,
+      editarEstrategia,
+      vincularEstudiantes,
+      registrarAcompanamiento,
+      actualizarAvanceSemanal,
+      sincronizarColaOffline,
+      generarYDescargarReporteCsv,
+      verificarIntegridadCadena,
+      simularAlteracionAuditoria,
+      restaurarDatosDeFabrica,
+    }),
+    [
+      state,
+      rolActivo,
+      isReady,
+      seleccionarRol,
+      toggleModoOffline,
+      crearEstrategia,
+      editarEstrategia,
+      vincularEstudiantes,
+      registrarAcompanamiento,
+      actualizarAvanceSemanal,
+      sincronizarColaOffline,
+      generarYDescargarReporteCsv,
+      verificarIntegridadCadena,
+      simularAlteracionAuditoria,
+      restaurarDatosDeFabrica,
+    ]
+  );
+
+  return <SsesContext.Provider value={value}>{children}</SsesContext.Provider>;
+};
+
+export function useSses(): SsesContextValue {
+  const context = useContext(SsesContext);
+  if (!context) {
+    throw new Error('useSses debe utilizarse dentro de un SsesProvider.');
+  }
+  return context;
+}
