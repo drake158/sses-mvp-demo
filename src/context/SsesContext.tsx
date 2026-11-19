@@ -116,6 +116,9 @@ export interface SsesContextValue {
   state: SsesState;
   rolActivo: RolUsuario | null;
   isReady: boolean;
+  isBrowserOffline: boolean;
+  lastSyncNotification: string | null;
+  clearSyncNotification: () => void;
   seleccionarRol: (rol: RolUsuario | null) => void;
   toggleModoOffline: () => Promise<SyncResult | null>;
   crearEstrategia: (input: EstrategiaInput) => Promise<MutationResult<Estrategia>>;
@@ -168,9 +171,19 @@ export const SsesProvider: React.FC<{ children: React.ReactNode }> = ({
   const [state, setState] = useState<SsesState>(EMPTY_STATE);
   const [rolActivo, setRolActivo] = useState<RolUsuario | null>(null);
   const [isReady, setIsReady] = useState<boolean>(false);
+  const [isBrowserOffline, setIsBrowserOffline] = useState<boolean>(() =>
+    typeof navigator !== 'undefined' ? navigator.onLine === false : false
+  );
+  const [lastSyncNotification, setLastSyncNotification] = useState<
+    string | null
+  >(null);
 
   const stateRef = useRef<SsesState>(EMPTY_STATE);
   const mutationQueueRef = useRef<Promise<void>>(Promise.resolve());
+
+  const clearSyncNotification = useCallback(() => {
+    setLastSyncNotification(null);
+  }, []);
 
   const applyNewState = useCallback((next: SsesState) => {
     stateRef.current = next;
@@ -182,19 +195,27 @@ export const SsesProvider: React.FC<{ children: React.ReactNode }> = ({
     let active = true;
 
     async function bootstrap() {
+      const browserOffline =
+        typeof navigator !== 'undefined' && navigator.onLine === false;
       const stored = readStoredState();
       if (stored) {
+        const reconciled =
+          browserOffline && !stored.isOffline
+            ? { ...stored, isOffline: true }
+            : stored;
         if (active) {
-          stateRef.current = stored;
-          setState(stored);
+          applyNewState(reconciled);
           setIsReady(true);
         }
         return;
       }
 
       const initial = await buildInitialSsesState();
+      const reconciled = browserOffline
+        ? { ...initial, isOffline: true }
+        : initial;
       if (active) {
-        applyNewState(initial);
+        applyNewState(reconciled);
         setIsReady(true);
       }
     }
@@ -372,6 +393,12 @@ export const SsesProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [applyNewState, enqueueMutation]);
 
   const toggleModoOffline = useCallback(async (): Promise<SyncResult | null> => {
+    const browserOfflineNow =
+      typeof navigator !== 'undefined' && navigator.onLine === false;
+    if (browserOfflineNow && stateRef.current.isOffline) {
+      return null;
+    }
+
     let becameOnline = false;
     await enqueueMutation(async () => {
       const current = stateRef.current;
@@ -388,6 +415,48 @@ export const SsesProvider: React.FC<{ children: React.ReactNode }> = ({
     }
     return null;
   }, [applyNewState, enqueueMutation, sincronizarColaOffline]);
+
+  useEffect(() => {
+    if (!isReady || typeof window === 'undefined') {
+      return;
+    }
+
+    const handleBrowserOffline = () => {
+      setIsBrowserOffline(true);
+      void enqueueMutation(async () => {
+        const current = stateRef.current;
+        if (!current.isOffline) {
+          applyNewState({ ...current, isOffline: true });
+        }
+      });
+    };
+
+    const handleBrowserOnline = async () => {
+      setIsBrowserOffline(false);
+      await enqueueMutation(async () => {
+        const current = stateRef.current;
+        if (current.isOffline) {
+          applyNewState({ ...current, isOffline: false });
+        }
+      });
+
+      if (stateRef.current.offlineQueue.length > 0) {
+        const syncResult = await sincronizarColaOffline();
+        if (syncResult.syncedCount > 0) {
+          setLastSyncNotification(
+            `Red restablecida · ${syncResult.syncedCount} operación(es) sincronizada(s)`
+          );
+        }
+      }
+    };
+
+    window.addEventListener('offline', handleBrowserOffline);
+    window.addEventListener('online', handleBrowserOnline);
+    return () => {
+      window.removeEventListener('offline', handleBrowserOffline);
+      window.removeEventListener('online', handleBrowserOnline);
+    };
+  }, [isReady, applyNewState, enqueueMutation, sincronizarColaOffline]);
 
   const crearEstrategia = useCallback(
     async (input: EstrategiaInput): Promise<MutationResult<Estrategia>> => {
@@ -928,6 +997,9 @@ export const SsesProvider: React.FC<{ children: React.ReactNode }> = ({
       state,
       rolActivo,
       isReady,
+      isBrowserOffline,
+      lastSyncNotification,
+      clearSyncNotification,
       seleccionarRol,
       toggleModoOffline,
       crearEstrategia,
@@ -945,6 +1017,9 @@ export const SsesProvider: React.FC<{ children: React.ReactNode }> = ({
       state,
       rolActivo,
       isReady,
+      isBrowserOffline,
+      lastSyncNotification,
+      clearSyncNotification,
       seleccionarRol,
       toggleModoOffline,
       crearEstrategia,

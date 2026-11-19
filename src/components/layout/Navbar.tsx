@@ -29,6 +29,9 @@ export const Navbar: React.FC = () => {
   const {
     state,
     rolActivo,
+    isBrowserOffline,
+    lastSyncNotification,
+    clearSyncNotification,
     seleccionarRol,
     toggleModoOffline,
     restaurarDatosDeFabrica,
@@ -72,6 +75,14 @@ export const Navbar: React.FC = () => {
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [showResetModal, isResetting]);
+
+  useEffect(() => {
+    if (!lastSyncNotification) return;
+    setBannerMessage(lastSyncNotification);
+    clearSyncNotification();
+    const timer = window.setTimeout(() => setBannerMessage(null), 5000);
+    return () => window.clearTimeout(timer);
+  }, [lastSyncNotification, clearSyncNotification]);
 
   const activeRoleConfig =
     ROLE_OPTIONS.find((r) => r.rol === rolActivo) ?? ROLE_OPTIONS[0];
@@ -216,15 +227,21 @@ export const Navbar: React.FC = () => {
               <button
                 type="button"
                 onClick={handleToggleOffline}
-                disabled={isToggling}
+                disabled={isToggling || (isBrowserOffline && state.isOffline)}
                 aria-pressed={state.isOffline}
                 aria-label={
-                  state.isOffline
+                  isBrowserOffline
+                    ? 'Sin red del navegador. Restaura la conexión para sincronizar'
+                    : state.isOffline
                     ? 'Modo Offline activo. Cambiar a En línea'
                     : 'Modo En línea activo. Cambiar a Offline'
                 }
-                title="Alternar conectividad (En línea / Offline)"
-                className={`sses-badge px-3 py-1 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent disabled:opacity-50 ${
+                title={
+                  isBrowserOffline
+                    ? 'Sin red real del navegador (sincroniza automáticamente al reconectar)'
+                    : 'Alternar conectividad (En línea / Offline)'
+                }
+                className={`sses-badge px-3 py-1 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent disabled:opacity-75 ${
                   state.isOffline
                     ? 'sses-badge-warning'
                     : 'sses-badge-success'
@@ -236,7 +253,13 @@ export const Navbar: React.FC = () => {
                     state.isOffline ? 'bg-status-amber' : 'bg-status-emerald'
                   }`}
                 />
-                <span>{state.isOffline ? 'Offline' : 'En línea'}</span>
+                <span>
+                  {isBrowserOffline
+                    ? 'Sin red'
+                    : state.isOffline
+                    ? 'Offline'
+                    : 'En línea'}
+                </span>
                 {state.offlineQueue.length > 0 && (
                   <span className="sses-mono ml-0.5 rounded-full bg-status-amber px-1.5 text-[10px] text-[#0F172A]">
                     {state.offlineQueue.length}
