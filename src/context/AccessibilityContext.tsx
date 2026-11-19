@@ -7,9 +7,11 @@ import React, {
   useState,
 } from 'react';
 
+export type ThemeMode = 'light' | 'dark';
 export type TextScale = 'sm' | 'md' | 'lg';
 
 export interface AccessibilityPrefs {
+  theme: ThemeMode;
   textScale: TextScale;
   highContrast: boolean;
   readingSpacing: boolean;
@@ -18,27 +20,50 @@ export interface AccessibilityPrefs {
 
 export const A11Y_STORAGE_KEY = 'sses_a11y_prefs_v1';
 
-const DEFAULT_PREFS: AccessibilityPrefs = {
-  textScale: 'md',
-  highContrast: false,
-  readingSpacing: false,
-  reducedMotion: false,
-};
-
 const TEXT_SCALE_PERCENT: Record<TextScale, string> = {
   sm: '90%',
   md: '100%',
   lg: '115%',
 };
 
+function detectSystemTheme(): ThemeMode {
+  try {
+    if (
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches
+    ) {
+      return 'dark';
+    }
+  } catch {
+    // Fallback to light mode
+  }
+  return 'light';
+}
+
+function getDefaultPrefs(): AccessibilityPrefs {
+  return {
+    theme: detectSystemTheme(),
+    textScale: 'md',
+    highContrast: false,
+    readingSpacing: false,
+    reducedMotion: false,
+  };
+}
+
 function readStoredPrefs(): AccessibilityPrefs {
+  const defaults = getDefaultPrefs();
   try {
     if (typeof window === 'undefined' || !window.localStorage) {
-      return DEFAULT_PREFS;
+      return defaults;
     }
     const raw = window.localStorage.getItem(A11Y_STORAGE_KEY);
-    if (!raw) return DEFAULT_PREFS;
+    if (!raw) return defaults;
     const parsed = JSON.parse(raw) as Partial<AccessibilityPrefs>;
+    const theme: ThemeMode =
+      parsed.theme === 'light' || parsed.theme === 'dark'
+        ? parsed.theme
+        : defaults.theme;
     const textScale: TextScale =
       parsed.textScale === 'sm' ||
       parsed.textScale === 'md' ||
@@ -46,19 +71,22 @@ function readStoredPrefs(): AccessibilityPrefs {
         ? parsed.textScale
         : 'md';
     return {
+      theme,
       textScale,
       highContrast: Boolean(parsed.highContrast),
       readingSpacing: Boolean(parsed.readingSpacing),
       reducedMotion: Boolean(parsed.reducedMotion),
     };
   } catch {
-    return DEFAULT_PREFS;
+    return defaults;
   }
 }
 
 function applyPrefsToDocument(prefs: AccessibilityPrefs): void {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
+  root.dataset.theme = prefs.theme;
+  root.style.colorScheme = prefs.theme;
   root.style.fontSize = TEXT_SCALE_PERCENT[prefs.textScale];
   root.dataset.highContrast = String(prefs.highContrast);
   root.dataset.readingSpacing = String(prefs.readingSpacing);
@@ -68,6 +96,8 @@ function applyPrefsToDocument(prefs: AccessibilityPrefs): void {
 interface AccessibilityContextValue {
   prefs: AccessibilityPrefs;
   hasActiveOverrides: boolean;
+  setTheme: (theme: ThemeMode) => void;
+  toggleTheme: () => void;
   setTextScale: (scale: TextScale) => void;
   toggleHighContrast: () => void;
   toggleReadingSpacing: () => void;
@@ -97,6 +127,17 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [prefs]);
 
+  const setTheme = useCallback((theme: ThemeMode) => {
+    setPrefs((prev) => ({ ...prev, theme }));
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setPrefs((prev) => ({
+      ...prev,
+      theme: prev.theme === 'dark' ? 'light' : 'dark',
+    }));
+  }, []);
+
   const setTextScale = useCallback((textScale: TextScale) => {
     setPrefs((prev) => ({ ...prev, textScale }));
   }, []);
@@ -114,7 +155,13 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const resetPrefs = useCallback(() => {
-    setPrefs(DEFAULT_PREFS);
+    setPrefs((prev) => ({
+      ...prev,
+      textScale: 'md',
+      highContrast: false,
+      readingSpacing: false,
+      reducedMotion: false,
+    }));
   }, []);
 
   const hasActiveOverrides =
@@ -127,6 +174,8 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
     () => ({
       prefs,
       hasActiveOverrides,
+      setTheme,
+      toggleTheme,
       setTextScale,
       toggleHighContrast,
       toggleReadingSpacing,
@@ -136,6 +185,8 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
     [
       prefs,
       hasActiveOverrides,
+      setTheme,
+      toggleTheme,
       setTextScale,
       toggleHighContrast,
       toggleReadingSpacing,

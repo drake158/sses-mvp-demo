@@ -24,7 +24,6 @@ export const TutorView: React.FC = () => {
     [state.docentes]
   );
 
-  // Accompaniment form state
   const [estrategiaId, setEstrategiaId] = useState(
     state.estrategias[0]?.id ?? ''
   );
@@ -38,7 +37,6 @@ export const TutorView: React.FC = () => {
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Weekly NO_REALIZADO inline form state
   const [activeNoRealizadoKey, setActiveNoRealizadoKey] = useState<
     string | null
   >(null);
@@ -172,7 +170,7 @@ export const TutorView: React.FC = () => {
       {/* Minimal Header */}
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-[-0.025em] text-[#0F172A]">
+          <h1 className="text-2xl font-semibold tracking-[-0.025em] text-ink">
             Acompañamientos
           </h1>
           <StatusBadge tone="warning">Tutor Territorial</StatusBadge>
@@ -204,8 +202,8 @@ export const TutorView: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left: Create Form */}
         <section className="lg:col-span-5 sses-card overflow-hidden">
-          <div className="px-6 py-4 border-b border-[#E5E7EB]">
-            <h2 className="text-sm font-medium text-[#0F172A]">
+          <div className="px-6 py-4 border-b border-border-subtle">
+            <h2 className="text-sm font-medium text-ink">
               Nuevo acompañamiento
             </h2>
           </div>
@@ -214,7 +212,7 @@ export const TutorView: React.FC = () => {
             <div>
               <label
                 htmlFor="aco-estrategia"
-                className="block text-xs font-medium text-[#64748B] mb-1.5"
+                className="block text-xs font-medium text-ink-secondary mb-1.5"
               >
                 Estrategia
               </label>
@@ -239,7 +237,7 @@ export const TutorView: React.FC = () => {
               <div>
                 <label
                   htmlFor="aco-tutor"
-                  className="block text-xs font-medium text-[#64748B] mb-1.5"
+                  className="block text-xs font-medium text-ink-secondary mb-1.5"
                 >
                   Tutor
                 </label>
@@ -259,7 +257,7 @@ export const TutorView: React.FC = () => {
               <div>
                 <label
                   htmlFor="aco-mes"
-                  className="block text-xs font-medium text-[#64748B] mb-1.5"
+                  className="block text-xs font-medium text-ink-secondary mb-1.5"
                 >
                   Mes
                 </label>
@@ -275,13 +273,13 @@ export const TutorView: React.FC = () => {
             </div>
 
             <div>
-              <span className="block text-xs font-medium text-[#64748B] mb-1.5">
+              <span className="block text-xs font-medium text-ink-secondary mb-1.5">
                 Modalidad
               </span>
               <div
                 role="group"
                 aria-label="Modalidad de acompañamiento"
-                className="grid grid-cols-2 gap-1 rounded-lg bg-[#FAFAFA] border border-[#E5E7EB] p-1"
+                className="grid grid-cols-2 gap-1 rounded-lg bg-elevated border border-border-subtle p-1"
               >
                 <button
                   type="button"
@@ -289,8 +287,8 @@ export const TutorView: React.FC = () => {
                   onClick={() => setModalidad('INDIVIDUAL')}
                   className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors duration-150 ${
                     modalidad === 'INDIVIDUAL'
-                      ? 'bg-[#1E3A8A] text-white'
-                      : 'text-[#64748B] hover:text-[#0F172A]'
+                      ? 'bg-brand-primary text-[var(--brand-primary-text)]'
+                      : 'text-ink-secondary hover:text-ink'
                   }`}
                 >
                   Individual
@@ -301,8 +299,8 @@ export const TutorView: React.FC = () => {
                   onClick={() => setModalidad('GRUPAL')}
                   className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors duration-150 ${
                     modalidad === 'GRUPAL'
-                      ? 'bg-[#1E3A8A] text-white'
-                      : 'text-[#64748B] hover:text-[#0F172A]'
+                      ? 'bg-brand-primary text-[var(--brand-primary-text)]'
+                      : 'text-ink-secondary hover:text-ink'
                   }`}
                 >
                   Grupal
@@ -312,14 +310,14 @@ export const TutorView: React.FC = () => {
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-medium text-[#64748B]">
+                <span className="text-xs font-medium text-ink-secondary">
                   Docentes ({docenteIds.length})
                 </span>
-                <span className="text-[11px] text-[#64748B]">
+                <span className="text-[11px] text-ink-secondary">
                   {modalidad === 'INDIVIDUAL' ? '1 docente' : 'Mín. 2'}
                 </span>
               </div>
-              <div className="space-y-2 bg-[#FAFAFA] p-4 rounded-lg border border-[#E5E7EB]">
+              <div className="space-y-2 bg-elevated p-4 rounded-lg border border-border-subtle">
                 {docentesEntidad.map((doc) => {
                   const checked = docenteIds.includes(doc.id);
                   return (
@@ -332,12 +330,12 @@ export const TutorView: React.FC = () => {
                         name="docentes-seleccion"
                         checked={checked}
                         onChange={() => toggleDocente(doc.id)}
-                        className="accent-[#1E3A8A]"
+                        className="accent-brand-primary"
                       />
-                      <span className="font-medium text-[#0F172A]">
+                      <span className="font-medium text-ink">
                         {doc.nombreCompleto}
                       </span>
-                      <span className="text-[#64748B]">· {doc.area}</span>
+                      <span className="text-ink-secondary">· {doc.area}</span>
                     </label>
                   );
                 })}
@@ -347,7 +345,7 @@ export const TutorView: React.FC = () => {
             <div>
               <label
                 htmlFor="aco-obs"
-                className="block text-xs font-medium text-[#64748B] mb-1.5"
+                className="block text-xs font-medium text-ink-secondary mb-1.5"
               >
                 Observaciones
               </label>
@@ -377,10 +375,10 @@ export const TutorView: React.FC = () => {
               type="submit"
               disabled={isSaving}
               title="Autogenera 4 semanas en estado PENDIENTE"
-              className={`w-full inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0284C7] focus-visible:ring-offset-2 disabled:opacity-50 ${
+              className={`w-full inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent disabled:opacity-50 ${
                 state.isOffline
-                  ? 'bg-[#D97706] hover:bg-[#B45309]'
-                  : 'bg-[#1E3A8A] hover:bg-[#172E6E]'
+                  ? 'bg-[#D97706] hover:bg-[#B45309] text-white'
+                  : 'sses-btn-primary'
               }`}
             >
               {state.isOffline ? (
@@ -402,10 +400,10 @@ export const TutorView: React.FC = () => {
         {/* Right: Accompaniments List */}
         <section className="lg:col-span-7 space-y-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-medium text-[#0F172A]">
+            <h2 className="text-sm font-medium text-ink">
               Seguimiento semanal
             </h2>
-            <span className="sses-mono text-xs text-[#64748B]">
+            <span className="sses-mono text-xs text-ink-secondary">
               {state.acompanamientos.length}
             </span>
           </div>
@@ -419,13 +417,13 @@ export const TutorView: React.FC = () => {
 
             return (
               <article key={acomp.id} className="sses-card overflow-hidden">
-                <div className="px-6 py-4 border-b border-[#E5E7EB] flex flex-wrap items-start justify-between gap-4">
+                <div className="px-6 py-4 border-b border-border-subtle flex flex-wrap items-start justify-between gap-4">
                   <div className="space-y-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="sses-mono text-xs text-[#0284C7]">
+                      <span className="sses-mono text-xs text-brand-accent">
                         {acomp.id}
                       </span>
-                      <span className="sses-mono text-xs text-[#64748B]">
+                      <span className="sses-mono text-xs text-ink-secondary">
                         {acomp.mes}
                       </span>
                       <StatusBadge tone="neutral">
@@ -434,10 +432,10 @@ export const TutorView: React.FC = () => {
                           : 'Grupal'}
                       </StatusBadge>
                     </div>
-                    <h3 className="text-sm font-medium text-[#0F172A]">
+                    <h3 className="text-sm font-medium text-ink">
                       {est?.nombre ?? acomp.estrategiaId}
                     </h3>
-                    <div className="text-xs text-[#64748B]">
+                    <div className="text-xs text-ink-secondary">
                       {ent?.nombre} · {tutor?.nombreCompleto ?? acomp.tutorId} ·{' '}
                       {acomp.docenteIds
                         .map((id) => docentesById.get(id)?.nombreCompleto ?? id)
@@ -450,7 +448,7 @@ export const TutorView: React.FC = () => {
                       {isPendingSync ? 'Pendiente sync' : 'Sincronizado'}
                     </StatusBadge>
                     <code
-                      className="sses-mono text-[11px] text-[#64748B]"
+                      className="sses-mono text-[11px] text-ink-secondary"
                       title={`Idempotency-Key: ${acomp.idempotencyKey}`}
                     >
                       {acomp.idempotencyKey.slice(0, 16)}…
@@ -470,14 +468,14 @@ export const TutorView: React.FC = () => {
                     return (
                       <div
                         key={sem.id}
-                        className="rounded-lg border border-[#E5E7EB] p-4 space-y-3 bg-white"
+                        className="rounded-lg border border-border-subtle p-4 space-y-3 bg-elevated"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <div className="text-sm font-medium text-[#0F172A]">
+                            <div className="text-sm font-medium text-ink">
                               Semana {sem.numeroSemana}
                             </div>
-                            <div className="sses-mono text-[11px] text-[#64748B]">
+                            <div className="sses-mono text-[11px] text-ink-secondary">
                               {sem.fechaProgramada}
                             </div>
                           </div>
@@ -495,7 +493,7 @@ export const TutorView: React.FC = () => {
                               </StatusBadge>
                             )}
                             {semPendingSync && (
-                              <span className="text-[10px] text-[#92400E]">
+                              <span className="text-[10px] text-[var(--badge-warning-text)]">
                                 Pendiente sync
                               </span>
                             )}
@@ -504,7 +502,7 @@ export const TutorView: React.FC = () => {
 
                         {sem.estado === 'NO_REALIZADO' &&
                           sem.motivoNoRealizado && (
-                            <p className="text-xs text-[#991B1B] bg-[#FEF2F2] border border-[#FECACA] rounded-md px-2.5 py-1.5">
+                            <p className="sses-notice-danger py-1.5 px-2.5">
                               {sem.motivoNoRealizado}
                             </p>
                           )}
@@ -516,7 +514,7 @@ export const TutorView: React.FC = () => {
                               handleMarkRealizado(acomp.id, sem.id)
                             }
                             aria-label={`Marcar semana ${sem.numeroSemana} como realizada`}
-                            className="flex-1 rounded-md border border-[#E5E7EB] bg-white px-2.5 py-1.5 text-xs font-medium text-[#0F172A] hover:border-[#059669] hover:text-[#059669] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0284C7]"
+                            className="flex-1 rounded-md border border-border-subtle bg-surface px-2.5 py-1.5 text-xs font-medium text-ink hover:border-status-emerald hover:text-status-emerald transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent"
                           >
                             Realizado
                           </button>
@@ -533,14 +531,14 @@ export const TutorView: React.FC = () => {
                               }));
                             }}
                             aria-label={`Marcar semana ${sem.numeroSemana} como no realizada`}
-                            className="flex-1 rounded-md border border-[#E5E7EB] bg-white px-2.5 py-1.5 text-xs font-medium text-[#64748B] hover:border-[#DC2626] hover:text-[#DC2626] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0284C7]"
+                            className="flex-1 rounded-md border border-border-subtle bg-surface px-2.5 py-1.5 text-xs font-medium text-ink-secondary hover:border-status-danger hover:text-status-danger transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent"
                           >
                             No realizado
                           </button>
                         </div>
 
                         {isEditingNoRealizado && (
-                          <div className="pt-3 border-t border-[#E5E7EB] space-y-2">
+                          <div className="pt-3 border-t border-border-subtle space-y-2">
                             <textarea
                               rows={2}
                               aria-label="Motivo de no realización"
@@ -553,8 +551,8 @@ export const TutorView: React.FC = () => {
                               <span
                                 className={`sses-mono ${
                                   trimmedLen >= 10
-                                    ? 'text-[#059669]'
-                                    : 'text-[#64748B]'
+                                    ? 'text-status-emerald'
+                                    : 'text-ink-secondary'
                                 }`}
                               >
                                 {trimmedLen}/10

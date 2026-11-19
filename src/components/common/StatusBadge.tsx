@@ -11,19 +11,19 @@ interface StatusBadgeProps {
 }
 
 const DOT_COLOR: Record<BadgeTone, string> = {
-  success: 'bg-[#059669]',
-  warning: 'bg-[#D97706]',
-  danger: 'bg-[#DC2626]',
-  info: 'bg-[#0284C7]',
-  neutral: 'bg-[#64748B]',
+  success: 'bg-status-emerald',
+  warning: 'bg-status-amber',
+  danger: 'bg-status-danger',
+  info: 'bg-brand-accent',
+  neutral: 'bg-ink-secondary',
 };
 
-const PILL_STYLE: Record<BadgeTone, string> = {
-  success: 'border-[#E5E7EB] bg-white text-[#0F172A]',
-  warning: 'border-[#FDE68A] bg-[#FFFBEB] text-[#92400E]',
-  danger: 'border-[#FECACA] bg-[#FEF2F2] text-[#991B1B]',
-  info: 'border-[#BAE6FD] bg-[#F0F9FF] text-[#0369A1]',
-  neutral: 'border-[#E5E7EB] bg-[#FAFAFA] text-[#64748B]',
+const TONE_CLASS: Record<BadgeTone, string> = {
+  success: 'sses-badge-success',
+  warning: 'sses-badge-warning',
+  danger: 'sses-badge-danger',
+  info: 'sses-badge-info',
+  neutral: 'sses-badge-neutral',
 };
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({
@@ -36,9 +36,9 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   return (
     <span
       title={title}
-      className={`sses-badge inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${
-        PILL_STYLE[tone]
-      } ${mono ? 'sses-mono' : ''} ${className}`}
+      className={`sses-badge ${TONE_CLASS[tone]} ${
+        mono ? 'sses-mono' : ''
+      } ${className}`}
     >
       <span
         aria-hidden="true"

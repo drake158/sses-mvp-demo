@@ -55,7 +55,7 @@ export const EnteControlView: React.FC = () => {
       {/* Minimal Header */}
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-[-0.025em] text-[#0F172A]">
+          <h1 className="text-2xl font-semibold tracking-[-0.025em] text-ink">
             Supervisión
           </h1>
           <StatusBadge
@@ -79,7 +79,6 @@ export const EnteControlView: React.FC = () => {
         </button>
       </header>
 
-      {/* Read-Only KPIs & Report Receipt */}
       <KpiDashboard kpis={kpis} />
       <ReportReceiptCard
         constancias={constanciasControl}
@@ -88,9 +87,9 @@ export const EnteControlView: React.FC = () => {
 
       {/* Strategies Table */}
       <section className="sses-card overflow-hidden">
-        <div className="px-6 py-4 border-b border-[#E5E7EB] flex items-center justify-between gap-2">
-          <h2 className="text-sm font-medium text-[#0F172A]">Estrategias</h2>
-          <span className="sses-mono text-xs text-[#64748B]">
+        <div className="px-6 py-4 border-b border-border-subtle flex items-center justify-between gap-2">
+          <h2 className="text-sm font-medium text-ink">Estrategias</h2>
+          <span className="sses-mono text-xs text-ink-secondary">
             {state.estrategias.length}
           </span>
         </div>
@@ -112,14 +111,14 @@ export const EnteControlView: React.FC = () => {
                 const locked = est.estado === 'CON_ESTUDIANTES';
                 return (
                   <tr key={est.id}>
-                    <td className="sses-mono text-xs text-[#0284C7]">
+                    <td className="sses-mono text-xs text-brand-accent">
                       {est.id}
                     </td>
-                    <td className="font-medium text-[#0F172A]">{est.nombre}</td>
-                    <td className="text-[#64748B]">
+                    <td className="font-medium text-ink">{est.nombre}</td>
+                    <td className="text-ink-secondary">
                       {ent?.nombre ?? est.entidadId}
                     </td>
-                    <td className="sses-mono text-xs text-[#64748B]">
+                    <td className="sses-mono text-xs text-ink-secondary">
                       {est.fechaInicio} → {est.fechaFin}
                     </td>
                     <td>
@@ -127,7 +126,7 @@ export const EnteControlView: React.FC = () => {
                         {locked ? 'Bloqueada' : 'Editable'}
                       </StatusBadge>
                     </td>
-                    <td className="text-right sses-mono text-[#0F172A]">
+                    <td className="text-right sses-mono text-ink">
                       {est.estudianteIds.length}
                     </td>
                   </tr>
@@ -140,8 +139,8 @@ export const EnteControlView: React.FC = () => {
 
       {/* Masked Students Table (Ley 1581) */}
       <section className="sses-card overflow-hidden">
-        <div className="px-6 py-4 border-b border-[#E5E7EB] flex items-center justify-between gap-2">
-          <h2 className="text-sm font-medium text-[#0F172A]">Estudiantes</h2>
+        <div className="px-6 py-4 border-b border-border-subtle flex items-center justify-between gap-2">
+          <h2 className="text-sm font-medium text-ink">Estudiantes</h2>
           <StatusBadge tone="success" mono>
             Ley 1581 · {state.estudiantes.length}
           </StatusBadge>
@@ -159,19 +158,17 @@ export const EnteControlView: React.FC = () => {
             <tbody>
               {state.estudiantes.map((est) => (
                 <tr key={est.id}>
-                  <td className="sses-mono text-xs text-[#059669]">
+                  <td className="sses-mono text-xs text-status-emerald">
                     {enmascararDocumentoLey1581(
                       est.tipoDocumento,
                       est.numeroDocumento
                     )}
                   </td>
-                  <td className="font-medium text-[#0F172A]">
-                    {est.nombreCompleto}
-                  </td>
-                  <td className="sses-mono text-xs text-[#64748B]">
+                  <td className="font-medium text-ink">{est.nombreCompleto}</td>
+                  <td className="sses-mono text-xs text-ink-secondary">
                     {est.grado}
                   </td>
-                  <td className="text-[#64748B]">
+                  <td className="text-ink-secondary">
                     {entidadesById.get(est.entidadId)?.nombre ?? est.entidadId}
                   </td>
                 </tr>
@@ -184,9 +181,9 @@ export const EnteControlView: React.FC = () => {
       {/* Masked Teachers & Tutors Tables */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <section className="sses-card overflow-hidden">
-          <div className="px-6 py-4 border-b border-[#E5E7EB] flex items-center justify-between">
-            <h2 className="text-sm font-medium text-[#0F172A]">Docentes</h2>
-            <span className="sses-mono text-xs text-[#64748B]">
+          <div className="px-6 py-4 border-b border-border-subtle flex items-center justify-between">
+            <h2 className="text-sm font-medium text-ink">Docentes</h2>
+            <span className="sses-mono text-xs text-ink-secondary">
               {state.docentes.length}
             </span>
           </div>
@@ -202,16 +199,16 @@ export const EnteControlView: React.FC = () => {
               <tbody>
                 {state.docentes.map((doc) => (
                   <tr key={doc.id}>
-                    <td className="sses-mono text-xs text-[#059669]">
+                    <td className="sses-mono text-xs text-status-emerald">
                       {enmascararDocumentoLey1581(
                         doc.tipoDocumento,
                         doc.numeroDocumento
                       )}
                     </td>
-                    <td className="font-medium text-[#0F172A]">
+                    <td className="font-medium text-ink">
                       {doc.nombreCompleto}
                     </td>
-                    <td className="text-[#64748B]">{doc.area}</td>
+                    <td className="text-ink-secondary">{doc.area}</td>
                   </tr>
                 ))}
               </tbody>
@@ -220,9 +217,9 @@ export const EnteControlView: React.FC = () => {
         </section>
 
         <section className="sses-card overflow-hidden">
-          <div className="px-6 py-4 border-b border-[#E5E7EB] flex items-center justify-between">
-            <h2 className="text-sm font-medium text-[#0F172A]">Tutores</h2>
-            <span className="sses-mono text-xs text-[#64748B]">
+          <div className="px-6 py-4 border-b border-border-subtle flex items-center justify-between">
+            <h2 className="text-sm font-medium text-ink">Tutores</h2>
+            <span className="sses-mono text-xs text-ink-secondary">
               {state.tutores.length}
             </span>
           </div>
@@ -238,16 +235,16 @@ export const EnteControlView: React.FC = () => {
               <tbody>
                 {state.tutores.map((tut) => (
                   <tr key={tut.id}>
-                    <td className="sses-mono text-xs text-[#059669]">
+                    <td className="sses-mono text-xs text-status-emerald">
                       {enmascararDocumentoLey1581(
                         tut.tipoDocumento,
                         tut.numeroDocumento
                       )}
                     </td>
-                    <td className="font-medium text-[#0F172A]">
+                    <td className="font-medium text-ink">
                       {tut.nombreCompleto}
                     </td>
-                    <td className="text-[#64748B]">{tut.zonaAsignada}</td>
+                    <td className="text-ink-secondary">{tut.zonaAsignada}</td>
                   </tr>
                 ))}
               </tbody>
@@ -258,15 +255,13 @@ export const EnteControlView: React.FC = () => {
 
       {/* Read-only Follow-ups Summary */}
       <section className="sses-card overflow-hidden">
-        <div className="px-6 py-4 border-b border-[#E5E7EB] flex items-center justify-between">
-          <h2 className="text-sm font-medium text-[#0F172A]">
-            Acompañamientos
-          </h2>
-          <span className="sses-mono text-xs text-[#64748B]">
+        <div className="px-6 py-4 border-b border-border-subtle flex items-center justify-between">
+          <h2 className="text-sm font-medium text-ink">Acompañamientos</h2>
+          <span className="sses-mono text-xs text-ink-secondary">
             {state.acompanamientos.length}
           </span>
         </div>
-        <div className="divide-y divide-[#E5E7EB]">
+        <div className="divide-y divide-border-subtle">
           {state.acompanamientos.map((acomp) => {
             const est = estrategiasById.get(acomp.estrategiaId);
             const tut = tutoresById.get(acomp.tutorId);
@@ -274,17 +269,19 @@ export const EnteControlView: React.FC = () => {
               <div key={acomp.id} className="p-6 space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="sses-mono text-[#0284C7]">{acomp.id}</span>
-                    <span className="text-sm font-medium text-[#0F172A]">
+                    <span className="sses-mono text-brand-accent">
+                      {acomp.id}
+                    </span>
+                    <span className="text-sm font-medium text-ink">
                       {est?.nombre ?? acomp.estrategiaId}
                     </span>
-                    <span className="sses-mono text-[#64748B]">
+                    <span className="sses-mono text-ink-secondary">
                       · {acomp.mes}
                     </span>
                   </div>
-                  <div className="text-[#64748B]">
+                  <div className="text-ink-secondary">
                     {tut?.nombreCompleto} (
-                    <span className="sses-mono text-[#059669]">
+                    <span className="sses-mono text-status-emerald">
                       {tut
                         ? enmascararDocumentoLey1581(
                             tut.tipoDocumento,
@@ -301,10 +298,10 @@ export const EnteControlView: React.FC = () => {
                   {acomp.semanas.map((s) => (
                     <div
                       key={s.id}
-                      className="p-3 rounded-lg bg-[#FAFAFA] border border-[#E5E7EB] space-y-1.5"
+                      className="p-3 rounded-lg bg-elevated border border-border-subtle space-y-1.5"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-medium text-[#0F172A]">
+                        <span className="text-xs font-medium text-ink">
                           S{s.numeroSemana}
                         </span>
                         <StatusBadge
@@ -324,7 +321,7 @@ export const EnteControlView: React.FC = () => {
                         </StatusBadge>
                       </div>
                       {s.motivoNoRealizado && (
-                        <p className="text-[11px] text-[#64748B] leading-snug">
+                        <p className="text-[11px] text-ink-secondary leading-snug">
                           {s.motivoNoRealizado}
                         </p>
                       )}

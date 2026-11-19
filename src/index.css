@@ -2,31 +2,236 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================================
+   GOV.CO / MinEducación Design Tokens (Light & Dark + High Contrast)
+   ============================================================================ */
+
+:root,
+html[data-theme='light'] {
+  color-scheme: light;
+
+  /* GOV.CO Institutional Top Ribbon */
+  --gov-ribbon-bg: #3366CC;
+  --gov-ribbon-hover: #254E9E;
+  --gov-ribbon-text: #FFFFFF;
+
+  /* Brand Accents */
+  --brand-primary: #004884;
+  --brand-primary-hover: #003563;
+  --brand-primary-text: #FFFFFF;
+  --brand-accent: #3366CC;
+  --brand-accent-hover: #254E9E;
+  --brand-accent-soft: #EFF6FF;
+  --brand-accent-border: #BFDBFE;
+
+  /* Surfaces & Borders */
+  --bg-canvas: #F1F5F9;
+  --bg-surface: #FFFFFF;
+  --bg-surface-elevated: #F8FAFC;
+  --bg-surface-hover: #F8FAFC;
+  --border-subtle: #CBD5E1;
+  --border-strong: #94A3B8;
+  --card-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --modal-shadow: 0 12px 32px rgba(15, 23, 42, 0.14);
+
+  /* Typography */
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+
+  /* Semantic Status Indicators */
+  --status-emerald: #059669;
+  --status-amber: #F59E0B;
+  --status-danger: #DC2626;
+
+  /* Semantic Pills & Notices */
+  --badge-success-bg: #ECFDF5;
+  --badge-success-border: #A7F3D0;
+  --badge-success-text: #065F46;
+
+  --badge-warning-bg: #FFFBEB;
+  --badge-warning-border: #FDE68A;
+  --badge-warning-text: #92400E;
+
+  --badge-danger-bg: #FEF2F2;
+  --badge-danger-border: #FECACA;
+  --badge-danger-text: #991B1B;
+
+  --badge-info-bg: #EFF6FF;
+  --badge-info-border: #BFDBFE;
+  --badge-info-text: #004884;
+
+  --badge-neutral-bg: #F8FAFC;
+  --badge-neutral-border: #CBD5E1;
+  --badge-neutral-text: #475569;
+}
+
+html[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* GOV.CO Institutional Top Ribbon (Deep Navy) */
+  --gov-ribbon-bg: #003366;
+  --gov-ribbon-hover: #004488;
+  --gov-ribbon-text: #FFFFFF;
+
+  /* Brand Accents (WCAG AA on Dark) */
+  --brand-primary: #3B82F6;
+  --brand-primary-hover: #2563EB;
+  --brand-primary-text: #FFFFFF;
+  --brand-accent: #60A5FA;
+  --brand-accent-hover: #93C5FD;
+  --brand-accent-soft: rgba(59, 130, 246, 0.15);
+  --brand-accent-border: rgba(96, 165, 250, 0.35);
+
+  /* Surfaces & Borders (Linear-inspired Night Blue) */
+  --bg-canvas: #0B1120;
+  --bg-surface: #111827;
+  --bg-surface-elevated: #1E293B;
+  --bg-surface-hover: #1E293B;
+  --border-subtle: #1E293B;
+  --border-strong: #334155;
+  --card-shadow: none;
+  --modal-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+
+  /* Typography */
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+
+  /* Semantic Status Indicators */
+  --status-emerald: #10B981;
+  --status-amber: #F59E0B;
+  --status-danger: #F87171;
+
+  /* Semantic Pills & Notices */
+  --badge-success-bg: rgba(5, 150, 105, 0.16);
+  --badge-success-border: rgba(16, 185, 129, 0.35);
+  --badge-success-text: #6EE7B7;
+
+  --badge-warning-bg: rgba(245, 158, 11, 0.16);
+  --badge-warning-border: rgba(245, 158, 11, 0.35);
+  --badge-warning-text: #FCD34D;
+
+  --badge-danger-bg: rgba(220, 38, 38, 0.18);
+  --badge-danger-border: rgba(248, 113, 113, 0.38);
+  --badge-danger-text: #FCA5A5;
+
+  --badge-info-bg: rgba(59, 130, 246, 0.16);
+  --badge-info-border: rgba(96, 165, 250, 0.38);
+  --badge-info-text: #93C5FD;
+
+  --badge-neutral-bg: #1E293B;
+  --badge-neutral-border: #334155;
+  --badge-neutral-text: #CBD5E1;
+}
+
+/* ============================================================================
+   WCAG AAA High Contrast Overrides (Light & Dark Compatible)
+   ============================================================================ */
+
+html[data-theme='light'][data-high-contrast='true'] {
+  --gov-ribbon-bg: #002855;
+  --gov-ribbon-hover: #001B3A;
+  --brand-primary: #002855;
+  --brand-primary-hover: #001B3A;
+  --brand-primary-text: #FFFFFF;
+  --brand-accent: #002855;
+  --brand-accent-hover: #001B3A;
+  --brand-accent-soft: #E2E8F0;
+  --brand-accent-border: #0F172A;
+
+  --bg-canvas: #FFFFFF;
+  --bg-surface: #FFFFFF;
+  --bg-surface-elevated: #FFFFFF;
+  --bg-surface-hover: #F1F5F9;
+  --border-subtle: #0F172A;
+  --border-strong: #0F172A;
+  --card-shadow: none;
+
+  --text-primary: #000000;
+  --text-secondary: #0F172A;
+
+  --badge-success-bg: #FFFFFF;
+  --badge-success-border: #0F172A;
+  --badge-success-text: #000000;
+  --badge-warning-bg: #FFFFFF;
+  --badge-warning-border: #0F172A;
+  --badge-warning-text: #000000;
+  --badge-danger-bg: #FFFFFF;
+  --badge-danger-border: #0F172A;
+  --badge-danger-text: #000000;
+  --badge-info-bg: #FFFFFF;
+  --badge-info-border: #0F172A;
+  --badge-info-text: #000000;
+  --badge-neutral-bg: #FFFFFF;
+  --badge-neutral-border: #0F172A;
+  --badge-neutral-text: #000000;
+}
+
+html[data-theme='dark'][data-high-contrast='true'] {
+  --gov-ribbon-bg: #001A33;
+  --gov-ribbon-hover: #002D5A;
+  --brand-primary: #FFFFFF;
+  --brand-primary-hover: #E2E8F0;
+  --brand-primary-text: #000000;
+  --brand-accent: #93C5FD;
+  --brand-accent-hover: #FFFFFF;
+  --brand-accent-soft: #1E293B;
+  --brand-accent-border: #FFFFFF;
+
+  --bg-canvas: #000000;
+  --bg-surface: #000000;
+  --bg-surface-elevated: #0B1120;
+  --bg-surface-hover: #111827;
+  --border-subtle: #FFFFFF;
+  --border-strong: #FFFFFF;
+  --card-shadow: none;
+
+  --text-primary: #FFFFFF;
+  --text-secondary: #F8FAFC;
+
+  --badge-success-bg: #000000;
+  --badge-success-border: #FFFFFF;
+  --badge-success-text: #FFFFFF;
+  --badge-warning-bg: #000000;
+  --badge-warning-border: #FFFFFF;
+  --badge-warning-text: #FFFFFF;
+  --badge-danger-bg: #000000;
+  --badge-danger-border: #FFFFFF;
+  --badge-danger-text: #FFFFFF;
+  --badge-info-bg: #000000;
+  --badge-info-border: #FFFFFF;
+  --badge-info-text: #FFFFFF;
+  --badge-neutral-bg: #000000;
+  --badge-neutral-border: #FFFFFF;
+  --badge-neutral-text: #FFFFFF;
+}
+
 @layer base {
   html {
     font-size: 100%;
-    background-color: #FAFAFA;
-    color: #0F172A;
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
     font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     font-weight: 400;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 150ms ease, color 150ms ease;
   }
 
   body {
-    background-color: #FAFAFA;
-    color: #0F172A;
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
     font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     font-weight: 400;
     line-height: 1.5;
+    transition: background-color 150ms ease, color 150ms ease;
   }
 
   h1 {
     font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
     font-weight: 600;
     letter-spacing: -0.025em;
-    color: #0F172A;
+    color: var(--text-primary);
   }
 
   h2,
@@ -35,7 +240,7 @@
     font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
     font-weight: 500;
     letter-spacing: -0.02em;
-    color: #0F172A;
+    color: var(--text-primary);
   }
 
   code,
@@ -44,18 +249,31 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* Universal keyboard focus indicator (WCAG 2.1 AA) */
   :is(a, button, input, select, textarea, [tabindex]):focus-visible {
-    outline: 2px solid #0284C7;
+    outline: 2px solid var(--brand-accent);
     outline-offset: 2px;
   }
 }
 
 @layer components {
   .sses-card {
-    background-color: #FFFFFF;
-    border: 1px solid #E5E7EB;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
     border-radius: 0.75rem;
+    box-shadow: var(--card-shadow);
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+  }
+
+  .sses-popover {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 0.75rem;
+    box-shadow: var(--modal-shadow);
+  }
+
+  html[data-theme='dark'] .sses-popover {
+    background-color: var(--bg-surface-elevated);
+    border-color: var(--border-strong);
   }
 
   .sses-mono {
@@ -71,57 +289,237 @@
   }
 
   .sses-input {
-    @apply w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm font-normal text-[#0F172A] placeholder:text-[#94A3B8] transition-colors duration-150 hover:border-[#CBD5E1] focus:border-[#0284C7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0284C7]/25;
+    width: 100%;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-subtle);
+    background-color: var(--bg-surface);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--text-primary);
+    transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease;
+  }
+
+  .sses-input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.75;
+  }
+
+  .sses-input:hover {
+    border-color: var(--border-strong);
+  }
+
+  .sses-input:focus {
+    border-color: var(--brand-accent);
+    outline: none;
   }
 
   .sses-btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-[#1E3A8A] px-3.5 py-2 text-sm font-medium text-white transition-colors duration-150 hover:bg-[#172E6E] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0284C7] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    background-color: var(--brand-primary);
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--brand-primary-text);
+    transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+  }
+
+  .sses-btn-primary:hover:not(:disabled) {
+    background-color: var(--brand-primary-hover);
+  }
+
+  .sses-btn-primary:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
   }
 
   .sses-btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-[#E5E7EB] bg-white px-3.5 py-2 text-sm font-medium text-[#0F172A] transition-colors duration-150 hover:bg-[#FAFAFA] hover:border-[#CBD5E1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0284C7] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-subtle);
+    background-color: var(--bg-surface);
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+  }
+
+  .sses-btn-secondary:hover:not(:disabled) {
+    background-color: var(--bg-surface-hover);
+    border-color: var(--border-strong);
+  }
+
+  .sses-btn-secondary:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
   }
 
   .sses-btn-ghost {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-[#64748B] transition-colors duration-150 hover:bg-[#F3F4F6] hover:text-[#0F172A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0284C7] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    border-radius: 0.5rem;
+    padding: 0.375rem 0.625rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: background-color 150ms ease, color 150ms ease;
   }
 
-  /* Minimalist Status Banners */
+  .sses-btn-ghost:hover:not(:disabled) {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-primary);
+  }
+
+  .sses-btn-ghost:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  /* Semantic Status Badges */
+  .sses-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    border-radius: 9999px;
+    border: 1px solid var(--badge-neutral-border);
+    background-color: var(--badge-neutral-bg);
+    color: var(--badge-neutral-text);
+    padding: 0.125rem 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+  }
+
+  .sses-badge-success {
+    border-color: var(--badge-success-border);
+    background-color: var(--badge-success-bg);
+    color: var(--badge-success-text);
+  }
+
+  .sses-badge-warning {
+    border-color: var(--badge-warning-border);
+    background-color: var(--badge-warning-bg);
+    color: var(--badge-warning-text);
+  }
+
+  .sses-badge-danger {
+    border-color: var(--badge-danger-border);
+    background-color: var(--badge-danger-bg);
+    color: var(--badge-danger-text);
+  }
+
+  .sses-badge-info {
+    border-color: var(--badge-info-border);
+    background-color: var(--badge-info-bg);
+    color: var(--badge-info-text);
+  }
+
+  .sses-badge-neutral {
+    border-color: var(--badge-neutral-border);
+    background-color: var(--badge-neutral-bg);
+    color: var(--badge-neutral-text);
+  }
+
+  /* Semantic Status Notices */
   .sses-notice-success {
-    @apply rounded-lg border border-[#BBF7D0] bg-[#F0FDF4] px-4 py-3 text-xs font-normal text-[#166534];
+    border-radius: 0.5rem;
+    border: 1px solid var(--badge-success-border);
+    background-color: var(--badge-success-bg);
+    padding: 0.75rem 1rem;
+    font-size: 0.75rem;
+    color: var(--badge-success-text);
   }
 
   .sses-notice-warning {
-    @apply rounded-lg border border-[#FDE68A] bg-[#FFFBEB] px-4 py-3 text-xs font-normal text-[#92400E];
+    border-radius: 0.5rem;
+    border: 1px solid var(--badge-warning-border);
+    background-color: var(--badge-warning-bg);
+    padding: 0.75rem 1rem;
+    font-size: 0.75rem;
+    color: var(--badge-warning-text);
   }
 
   .sses-notice-danger {
-    @apply rounded-lg border border-[#FECACA] bg-[#FEF2F2] px-4 py-3 text-xs font-normal text-[#991B1B];
+    border-radius: 0.5rem;
+    border: 1px solid var(--badge-danger-border);
+    background-color: var(--badge-danger-bg);
+    padding: 0.75rem 1rem;
+    font-size: 0.75rem;
+    color: var(--badge-danger-text);
   }
 
-  /* Minimalist Tables (No vertical borders, airy padding) */
+  /* Minimalist Tables (No vertical borders) */
   .sses-table {
-    @apply min-w-full border-collapse text-sm font-normal;
+    width: 100%;
+    min-width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    font-weight: 400;
   }
 
   .sses-table thead th {
-    @apply border-b border-[#E5E7EB] bg-[#FAFAFA] px-6 py-3 text-left text-xs font-medium text-[#64748B];
+    border-bottom: 1px solid var(--border-subtle);
+    background-color: var(--bg-surface-elevated);
+    padding: 0.75rem 1.5rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-secondary);
   }
 
   .sses-table tbody tr {
-    @apply border-b border-[#E5E7EB] last:border-b-0 transition-colors duration-150 hover:bg-[#FAFAFA];
+    border-bottom: 1px solid var(--border-subtle);
+    transition: background-color 150ms ease;
+  }
+
+  .sses-table tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  .sses-table tbody tr:hover {
+    background-color: var(--bg-surface-hover);
   }
 
   .sses-table tbody td {
-    @apply px-6 py-3.5 text-[#0F172A] align-middle;
+    padding: 0.875rem 1.5rem;
+    color: var(--text-primary);
+    vertical-align: middle;
   }
 }
 
-/* ============================================================================
-   WCAG 2.1 AA Accessibility Overrides
-   ============================================================================ */
+/* High contrast structural border reinforcement */
+html[data-high-contrast='true'] .sses-card,
+html[data-high-contrast='true'] .sses-input,
+html[data-high-contrast='true'] .sses-btn-secondary,
+html[data-high-contrast='true'] .sses-popover,
+html[data-high-contrast='true'] .sses-badge,
+html[data-high-contrast='true'] .sses-notice-success,
+html[data-high-contrast='true'] .sses-notice-warning,
+html[data-high-contrast='true'] .sses-notice-danger {
+  border-width: 1.5px;
+}
 
-/* 1. Reduced Motion (User toggle or OS preference) */
+html[data-high-contrast='true'] .backdrop-blur-sm {
+  backdrop-filter: none !important;
+}
+
+html[data-high-contrast='true'] :is(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--brand-accent) !important;
+  outline-offset: 2px !important;
+}
+
+/* Reduced Motion (User toggle or OS preference) */
 html[data-reduced-motion='true'] *,
 html[data-reduced-motion='true'] *::before,
 html[data-reduced-motion='true'] *::after {
@@ -142,98 +540,13 @@ html[data-reduced-motion='true'] *::after {
   }
 }
 
-/* 2. Reading Spacing Mode */
-html[data-reading-spacing='true'] body {
-  line-height: 1.85;
-  letter-spacing: 0.018em;
-  word-spacing: 0.06em;
-}
-
+/* Reading Spacing Mode */
+html[data-reading-spacing='true'] body,
 html[data-reading-spacing='true'] p,
 html[data-reading-spacing='true'] li,
 html[data-reading-spacing='true'] td,
 html[data-reading-spacing='true'] label {
   line-height: 1.85;
-}
-
-/* 3. High Contrast Mode (> 7:1 contrast, crisp #0F172A borders, zero transparencies) */
-html[data-high-contrast='true'],
-html[data-high-contrast='true'] body {
-  background-color: #FFFFFF !important;
-  color: #0F172A !important;
-}
-
-html[data-high-contrast='true'] .sses-card,
-html[data-high-contrast='true'] header,
-html[data-high-contrast='true'] footer,
-html[data-high-contrast='true'] table,
-html[data-high-contrast='true'] th,
-html[data-high-contrast='true'] td,
-html[data-high-contrast='true'] tr,
-html[data-high-contrast='true'] article,
-html[data-high-contrast='true'] [role='menu'],
-html[data-high-contrast='true'] [role='dialog'] {
-  border-color: #0F172A !important;
-}
-
-html[data-high-contrast='true'] .sses-card {
-  background-color: #FFFFFF !important;
-}
-
-html[data-high-contrast='true'] .text-\[\#64748B\],
-html[data-high-contrast='true'] .text-slate-500,
-html[data-high-contrast='true'] .text-slate-600 {
-  color: #0F172A !important;
-}
-
-html[data-high-contrast='true'] .border-\[\#E5E7EB\],
-html[data-high-contrast='true'] .divide-\[\#E5E7EB\] > :not([hidden]) ~ :not([hidden]) {
-  border-color: #0F172A !important;
-}
-
-html[data-high-contrast='true'] .bg-\[\#FAFAFA\],
-html[data-high-contrast='true'] .bg-\[\#F3F4F6\] {
-  background-color: #FFFFFF !important;
-}
-
-html[data-high-contrast='true'] .sses-input {
-  border: 2px solid #0F172A !important;
-  background-color: #FFFFFF !important;
-  color: #0F172A !important;
-}
-
-html[data-high-contrast='true'] .sses-btn-primary {
-  background-color: #0F172A !important;
-  color: #FFFFFF !important;
-  border: 2px solid #0F172A !important;
-}
-
-html[data-high-contrast='true'] .sses-btn-secondary {
-  background-color: #FFFFFF !important;
-  color: #0F172A !important;
-  border: 2px solid #0F172A !important;
-}
-
-html[data-high-contrast='true'] .sses-badge {
-  background-color: #FFFFFF !important;
-  color: #0F172A !important;
-  border: 1.5px solid #0F172A !important;
-}
-
-html[data-high-contrast='true'] .sses-notice-success,
-html[data-high-contrast='true'] .sses-notice-warning,
-html[data-high-contrast='true'] .sses-notice-danger {
-  background-color: #FFFFFF !important;
-  color: #0F172A !important;
-  border: 2px solid #0F172A !important;
-}
-
-html[data-high-contrast='true'] .backdrop-blur-sm {
-  backdrop-filter: none !important;
-  background-color: rgba(15, 23, 42, 0.85) !important;
-}
-
-html[data-high-contrast='true'] :is(a, button, input, select, textarea, [tabindex]):focus-visible {
-  outline: 3px solid #0F172A !important;
-  outline-offset: 2px !important;
+  letter-spacing: 0.018em;
+  word-spacing: 0.06em;
 }

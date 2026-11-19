@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Accessibility, RotateCcw } from 'lucide-react';
+import { Accessibility, Moon, RotateCcw, Sun } from 'lucide-react';
 import {
   useAccessibility,
   type TextScale,
@@ -31,10 +31,17 @@ const TEXT_SCALES: Array<{
   },
 ];
 
-export const AccessibilityMenu: React.FC = () => {
+interface AccessibilityMenuProps {
+  variant?: 'ribbon' | 'surface';
+}
+
+export const AccessibilityMenu: React.FC<AccessibilityMenuProps> = ({
+  variant = 'ribbon',
+}) => {
   const {
     prefs,
     hasActiveOverrides,
+    toggleTheme,
     setTextScale,
     toggleHighContrast,
     toggleReadingSpacing,
@@ -71,6 +78,17 @@ export const AccessibilityMenu: React.FC = () => {
     };
   }, [open]);
 
+  const triggerClass =
+    variant === 'ribbon'
+      ? `inline-flex items-center gap-1.5 rounded px-2 py-1 text-[13px] font-medium text-white transition-colors duration-150 hover:bg-gov-ribbon-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white ${
+          open ? 'bg-gov-ribbon-hover' : ''
+        }`
+      : `inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent ${
+          open || hasActiveOverrides
+            ? 'border-brand-accent bg-brand-soft text-brand-accent'
+            : 'border-border-subtle bg-surface text-ink hover:bg-surface-hover'
+        }`;
+
   return (
     <div ref={containerRef} className="relative">
       <button
@@ -80,18 +98,14 @@ export const AccessibilityMenu: React.FC = () => {
         aria-expanded={open}
         aria-label="Opciones de accesibilidad"
         title="Accesibilidad (WCAG 2.1 AA)"
-        className={`relative inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0284C7] focus-visible:ring-offset-2 ${
-          open || hasActiveOverrides
-            ? 'border-[#0284C7] bg-[#F0F9FF] text-[#0369A1]'
-            : 'border-[#E5E7EB] bg-white text-[#0F172A] hover:bg-[#FAFAFA]'
-        }`}
+        className={triggerClass}
       >
         <Accessibility className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
         <span className="hidden sm:inline">Accesibilidad</span>
         {hasActiveOverrides && (
           <span
             aria-hidden="true"
-            className="h-1.5 w-1.5 rounded-full bg-[#0284C7]"
+            className="h-1.5 w-1.5 rounded-full bg-status-amber"
           />
         )}
       </button>
@@ -100,18 +114,16 @@ export const AccessibilityMenu: React.FC = () => {
         <div
           role="menu"
           aria-label="Controles de accesibilidad"
-          className="absolute right-0 mt-2 w-72 rounded-xl border border-[#E5E7EB] bg-white p-4 z-50 space-y-4"
+          className="sses-popover absolute right-0 mt-2 w-72 p-4 z-50 space-y-4 text-ink"
         >
-          <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-2.5">
-            <span className="text-xs font-medium text-[#0F172A]">
-              Accesibilidad
-            </span>
+          <div className="flex items-center justify-between border-b border-border-subtle pb-2.5">
+            <span className="text-xs font-medium text-ink">Accesibilidad</span>
             {hasActiveOverrides && (
               <button
                 type="button"
                 onClick={resetPrefs}
                 aria-label="Restablecer opciones de accesibilidad"
-                className="inline-flex items-center gap-1 text-xs font-medium text-[#0284C7] hover:text-[#0369A1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0284C7] rounded"
+                className="inline-flex items-center gap-1 text-xs font-medium text-brand-accent hover:text-brand-accent-hover rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent"
               >
                 <RotateCcw className="h-3 w-3" strokeWidth={1.5} />
                 <span>Restablecer</span>
@@ -119,11 +131,28 @@ export const AccessibilityMenu: React.FC = () => {
             )}
           </div>
 
+          {/* Theme Toggle */}
+          <div className="flex items-center justify-between gap-3">
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-ink">
+              {prefs.theme === 'dark' ? (
+                <Moon className="h-3.5 w-3.5 text-brand-accent" strokeWidth={1.5} />
+              ) : (
+                <Sun className="h-3.5 w-3.5 text-status-amber" strokeWidth={1.5} />
+              )}
+              <span>Modo oscuro</span>
+            </span>
+            <SwitchControl
+              label="Alternar modo oscuro"
+              checked={prefs.theme === 'dark'}
+              onToggle={toggleTheme}
+            />
+          </div>
+
           {/* Text Size Scale */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-[#0F172A]">Tamaño texto</span>
-              <span className="sses-mono text-[#64748B]">
+              <span className="font-medium text-ink">Tamaño de fuente</span>
+              <span className="sses-mono text-ink-secondary">
                 {prefs.textScale === 'sm'
                   ? '90%'
                   : prefs.textScale === 'lg'
@@ -134,7 +163,7 @@ export const AccessibilityMenu: React.FC = () => {
             <div
               role="group"
               aria-label="Escala de texto"
-              className="grid grid-cols-3 gap-1 rounded-lg border border-[#E5E7EB] bg-[#FAFAFA] p-1"
+              className="grid grid-cols-3 gap-1 rounded-lg border border-border-subtle bg-elevated p-1"
             >
               {TEXT_SCALES.map((item) => {
                 const active = prefs.textScale === item.value;
@@ -146,10 +175,10 @@ export const AccessibilityMenu: React.FC = () => {
                     aria-pressed={active}
                     aria-label={item.ariaLabel}
                     title={item.title}
-                    className={`rounded-md py-1.5 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0284C7] ${
+                    className={`rounded-md py-1.5 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent ${
                       active
-                        ? 'bg-[#1E3A8A] text-white'
-                        : 'text-[#64748B] hover:text-[#0F172A]'
+                        ? 'bg-brand-primary text-[var(--brand-primary-text)]'
+                        : 'text-ink-secondary hover:text-ink'
                     }`}
                   >
                     {item.label}
@@ -159,26 +188,49 @@ export const AccessibilityMenu: React.FC = () => {
             </div>
           </div>
 
-          {/* Toggles */}
-          <div className="space-y-2.5 pt-1">
-            <ToggleRow
-              label="Alto contraste"
-              title="Refuerza bordes (#0F172A) y maximiza el contraste (> 7:1)"
-              checked={prefs.highContrast}
-              onToggle={toggleHighContrast}
-            />
-            <ToggleRow
-              label="Espaciado de lectura"
-              title="Aumenta el interlineado para facilitar la lectura"
-              checked={prefs.readingSpacing}
-              onToggle={toggleReadingSpacing}
-            />
-            <ToggleRow
-              label="Reducir movimiento"
-              title="Desactiva animaciones y transiciones"
-              checked={prefs.reducedMotion}
-              onToggle={toggleReducedMotion}
-            />
+          {/* Accessibility Toggles */}
+          <div className="space-y-2.5 pt-1 border-t border-border-subtle">
+            <div className="flex items-center justify-between gap-3 pt-2">
+              <span
+                title="Refuerza bordes y contraste en modo claro y oscuro"
+                className="text-xs font-medium text-ink"
+              >
+                Alto contraste
+              </span>
+              <SwitchControl
+                label="Alto contraste"
+                checked={prefs.highContrast}
+                onToggle={toggleHighContrast}
+              />
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <span
+                title="Amplía el interlineado para lectura cómoda"
+                className="text-xs font-medium text-ink"
+              >
+                Espaciado de lectura
+              </span>
+              <SwitchControl
+                label="Espaciado de lectura"
+                checked={prefs.readingSpacing}
+                onToggle={toggleReadingSpacing}
+              />
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <span
+                title="Desactiva animaciones y transiciones"
+                className="text-xs font-medium text-ink"
+              >
+                Reducir movimiento
+              </span>
+              <SwitchControl
+                label="Reducir movimiento"
+                checked={prefs.reducedMotion}
+                onToggle={toggleReducedMotion}
+              />
+            </div>
           </div>
         </div>
       )}
@@ -186,43 +238,37 @@ export const AccessibilityMenu: React.FC = () => {
   );
 };
 
-interface ToggleRowProps {
+interface SwitchControlProps {
   label: string;
-  title: string;
   checked: boolean;
   onToggle: () => void;
 }
 
-const ToggleRow: React.FC<ToggleRowProps> = ({
+const SwitchControl: React.FC<SwitchControlProps> = ({
   label,
-  title,
   checked,
   onToggle,
 }) => {
   return (
-    <div className="flex items-center justify-between gap-3">
-      <span title={title} className="text-xs font-medium text-[#0F172A]">
-        {label}
-      </span>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        aria-label={label}
-        title={title}
-        onClick={onToggle}
-        className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0284C7] focus-visible:ring-offset-2 ${
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      onClick={onToggle}
+      className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${
+        checked
+          ? 'border-brand-primary bg-brand-primary'
+          : 'border-border-strong bg-elevated'
+      }`}
+    >
+      <span
+        className={`inline-block h-3.5 w-3.5 rounded-full transition-transform duration-150 ${
           checked
-            ? 'border-[#1E3A8A] bg-[#1E3A8A]'
-            : 'border-[#CBD5E1] bg-[#E5E7EB]'
+            ? 'translate-x-4 bg-[var(--brand-primary-text)]'
+            : 'translate-x-0.5 bg-ink-secondary'
         }`}
-      >
-        <span
-          className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform duration-150 ${
-            checked ? 'translate-x-4' : 'translate-x-0.5'
-          }`}
-        />
-      </button>
-    </div>
+      />
+    </button>
   );
 };

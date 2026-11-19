@@ -93,7 +93,7 @@ export const AuditoriaView: React.FC = () => {
       {/* Minimal Header */}
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-[-0.025em] text-[#0F172A]">
+          <h1 className="text-2xl font-semibold tracking-[-0.025em] text-ink">
             Auditoría
           </h1>
           <StatusBadge
@@ -113,7 +113,10 @@ export const AuditoriaView: React.FC = () => {
             title="Altera un registro sin recalcular su hash para probar la detección criptográfica"
             className="sses-btn-secondary text-xs"
           >
-            <FlaskConical className="h-3.5 w-3.5 text-[#D97706]" strokeWidth={1.5} />
+            <FlaskConical
+              className="h-3.5 w-3.5 text-status-amber"
+              strokeWidth={1.5}
+            />
             <span>Simular alteración</span>
           </button>
 
@@ -130,14 +133,12 @@ export const AuditoriaView: React.FC = () => {
         </div>
       </header>
 
-      {/* Tamper Notice */}
       {tamperNotice && !integrityResult && (
         <div role="status" className="sses-notice-warning">
           {tamperNotice}
         </div>
       )}
 
-      {/* Integrity Verdict */}
       {integrityResult && (
         <div
           role="status"
@@ -192,7 +193,7 @@ export const AuditoriaView: React.FC = () => {
           </select>
         </div>
 
-        <span className="sses-mono text-xs text-[#64748B]">
+        <span className="sses-mono text-xs text-ink-secondary">
           {filteredEntries.length} / {state.auditLog.length}
         </span>
       </div>
@@ -207,17 +208,17 @@ export const AuditoriaView: React.FC = () => {
             <article
               key={entry.id}
               className={`sses-card overflow-hidden ${
-                isBroken ? 'border-[#DC2626]' : ''
+                isBroken ? 'border-status-danger' : ''
               }`}
             >
               <div className="px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1.5 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="sses-mono text-xs font-medium text-[#1E3A8A]">
+                    <span className="sses-mono text-xs font-medium text-brand-accent">
                       #{entry.secuencia} · {entry.id}
                     </span>
                     <StatusBadge tone="info">{entry.rol}</StatusBadge>
-                    <span className="sses-mono text-xs text-[#0F172A]">
+                    <span className="sses-mono text-xs text-ink">
                       {entry.accion}
                     </span>
                     {isBroken && (
@@ -225,10 +226,10 @@ export const AuditoriaView: React.FC = () => {
                     )}
                   </div>
 
-                  <div className="text-xs text-[#64748B] flex flex-wrap items-center gap-x-4 gap-y-1">
+                  <div className="text-xs text-ink-secondary flex flex-wrap items-center gap-x-4 gap-y-1">
                     <span>
                       {entry.entidadAfectada}{' '}
-                      <code className="sses-mono text-[#0F172A]">
+                      <code className="sses-mono text-ink">
                         {entry.registroId}
                       </code>
                     </span>
@@ -237,7 +238,7 @@ export const AuditoriaView: React.FC = () => {
                     </span>
                   </div>
 
-                  <div className="sses-mono text-[11px] text-[#64748B] flex flex-wrap items-center gap-x-4 gap-y-1">
+                  <div className="sses-mono text-[11px] text-ink-secondary flex flex-wrap items-center gap-x-4 gap-y-1">
                     <span
                       title={`previousHash: ${entry.previousHash}`}
                       className="inline-flex items-center gap-1"
@@ -245,10 +246,7 @@ export const AuditoriaView: React.FC = () => {
                       <Link2 className="h-3 w-3" strokeWidth={1.5} />
                       {entry.previousHash.slice(0, 12)}…
                     </span>
-                    <span
-                      title={`hash: ${entry.hash}`}
-                      className="text-[#0F172A]"
-                    >
+                    <span title={`hash: ${entry.hash}`} className="text-ink">
                       SHA-256: {entry.hash.slice(0, 20)}…
                     </span>
                   </div>
@@ -275,40 +273,40 @@ export const AuditoriaView: React.FC = () => {
               </div>
 
               {isExpanded && (
-                <div className="px-6 pb-6 pt-4 border-t border-[#E5E7EB] bg-[#FAFAFA] space-y-4">
+                <div className="px-6 pb-6 pt-4 border-t border-border-subtle bg-elevated space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <div className="text-xs font-medium text-[#64748B] mb-1.5">
+                      <div className="text-xs font-medium text-ink-secondary mb-1.5">
                         Anterior
                       </div>
-                      <pre className="sses-mono p-4 rounded-lg bg-white border border-[#E5E7EB] text-[11px] text-[#64748B] overflow-x-auto max-h-56">
+                      <pre className="sses-mono p-4 rounded-lg bg-surface border border-border-subtle text-[11px] text-ink-secondary overflow-x-auto max-h-56">
                         {JSON.stringify(entry.valoresAnteriores, null, 2)}
                       </pre>
                     </div>
                     <div>
-                      <div className="text-xs font-medium text-[#0F172A] mb-1.5">
+                      <div className="text-xs font-medium text-ink mb-1.5">
                         Nuevo
                       </div>
-                      <pre className="sses-mono p-4 rounded-lg bg-white border border-[#E5E7EB] text-[11px] text-[#0F172A] overflow-x-auto max-h-56">
+                      <pre className="sses-mono p-4 rounded-lg bg-surface border border-border-subtle text-[11px] text-ink overflow-x-auto max-h-56">
                         {JSON.stringify(entry.valoresNuevos, null, 2)}
                       </pre>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[11px]">
-                    <div className="p-3 rounded-lg bg-white border border-[#E5E7EB]">
-                      <div className="text-[#64748B] font-medium mb-1">
+                    <div className="p-3 rounded-lg bg-surface border border-border-subtle">
+                      <div className="text-ink-secondary font-medium mb-1">
                         previousHash
                       </div>
-                      <div className="sses-mono break-all text-[#64748B]">
+                      <div className="sses-mono break-all text-ink-secondary">
                         {entry.previousHash}
                       </div>
                     </div>
-                    <div className="p-3 rounded-lg bg-white border border-[#E5E7EB]">
-                      <div className="text-[#64748B] font-medium mb-1">
+                    <div className="p-3 rounded-lg bg-surface border border-border-subtle">
+                      <div className="text-ink-secondary font-medium mb-1">
                         hash
                       </div>
-                      <div className="sses-mono break-all text-[#0F172A]">
+                      <div className="sses-mono break-all text-ink">
                         {entry.hash}
                       </div>
                     </div>

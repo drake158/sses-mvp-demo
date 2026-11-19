@@ -55,7 +55,6 @@ export const FuncionarioMenView: React.FC = () => {
   const firstActiveEntidadId =
     state.entidades.find((e) => e.estado === 'ACTIVA')?.id ?? '';
 
-  // Create strategy form state
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [entidadId, setEntidadId] = useState(firstActiveEntidadId);
@@ -65,7 +64,6 @@ export const FuncionarioMenView: React.FC = () => {
   const [createSuccess, setCreateSuccess] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
-  // Selected strategy for detail / edit / linking
   const [selectedStrategyId, setSelectedStrategyId] = useState<string>(
     state.estrategias[0]?.id ?? ''
   );
@@ -77,7 +75,6 @@ export const FuncionarioMenView: React.FC = () => {
     [state.estrategias, selectedStrategyId]
   );
 
-  // Edit form state
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editNombre, setEditNombre] = useState('');
   const [editDescripcion, setEditDescripcion] = useState('');
@@ -87,7 +84,6 @@ export const FuncionarioMenView: React.FC = () => {
   const [editError, setEditError] = useState<string | null>(null);
   const [editSuccess, setEditSuccess] = useState<string | null>(null);
 
-  // Student linking state
   const [linkTab, setLinkTab] = useState<'INDIVIDUAL' | 'MASIVA'>('INDIVIDUAL');
   const [studentQuery, setStudentQuery] = useState('');
   const [bulkText, setBulkText] = useState('');
@@ -96,8 +92,6 @@ export const FuncionarioMenView: React.FC = () => {
   );
   const [linkError, setLinkError] = useState<string | null>(null);
   const [isLinking, setIsLinking] = useState(false);
-
-  // CSV export loading
   const [isExporting, setIsExporting] = useState(false);
 
   const startEdit = (est: Estrategia) => {
@@ -254,10 +248,10 @@ export const FuncionarioMenView: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      {/* Minimal View Header */}
+      {/* Minimal Header */}
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-[-0.025em] text-[#0F172A]">
+          <h1 className="text-2xl font-semibold tracking-[-0.025em] text-ink">
             Estrategias
           </h1>
           <StatusBadge tone="info">Funcionario MEN</StatusBadge>
@@ -276,25 +270,21 @@ export const FuncionarioMenView: React.FC = () => {
         </button>
       </header>
 
-      {/* KPIs + Latest Receipt */}
       <KpiDashboard kpis={kpis} />
       <ReportReceiptCard constancias={constanciasMen} />
 
-      {/* Main 12-Col Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left: Create Strategy Form */}
         <section className="lg:col-span-5 sses-card overflow-hidden">
-          <div className="px-6 py-4 border-b border-[#E5E7EB]">
-            <h2 className="text-sm font-medium text-[#0F172A]">
-              Nueva estrategia
-            </h2>
+          <div className="px-6 py-4 border-b border-border-subtle">
+            <h2 className="text-sm font-medium text-ink">Nueva estrategia</h2>
           </div>
 
           <form onSubmit={handleCreateStrategy} className="p-6 space-y-4">
             <div>
               <label
                 htmlFor="str-nombre"
-                className="block text-xs font-medium text-[#64748B] mb-1.5"
+                className="block text-xs font-medium text-ink-secondary mb-1.5"
               >
                 Nombre
               </label>
@@ -312,7 +302,7 @@ export const FuncionarioMenView: React.FC = () => {
             <div>
               <label
                 htmlFor="str-descripcion"
-                className="block text-xs font-medium text-[#64748B] mb-1.5"
+                className="block text-xs font-medium text-ink-secondary mb-1.5"
               >
                 Descripción
               </label>
@@ -330,13 +320,13 @@ export const FuncionarioMenView: React.FC = () => {
               <div className="flex items-center justify-between mb-1.5">
                 <label
                   htmlFor="str-entidad"
-                  className="text-xs font-medium text-[#64748B]"
+                  className="text-xs font-medium text-ink-secondary"
                 >
                   Entidad educativa
                 </label>
                 <span
                   title="Regla FR-006: Solo se permiten entidades en estado ACTIVA."
-                  className="inline-flex items-center gap-1 text-[11px] text-[#64748B] cursor-help"
+                  className="inline-flex items-center gap-1 text-[11px] text-ink-secondary cursor-help"
                 >
                   <Info className="h-3 w-3" strokeWidth={1.5} />
                   <span>Solo activas</span>
@@ -365,7 +355,7 @@ export const FuncionarioMenView: React.FC = () => {
               <div>
                 <label
                   htmlFor="str-inicio"
-                  className="block text-xs font-medium text-[#64748B] mb-1.5"
+                  className="block text-xs font-medium text-ink-secondary mb-1.5"
                 >
                   Inicio
                 </label>
@@ -381,7 +371,7 @@ export const FuncionarioMenView: React.FC = () => {
               <div>
                 <label
                   htmlFor="str-fin"
-                  className="block text-xs font-medium text-[#64748B] mb-1.5"
+                  className="block text-xs font-medium text-ink-secondary mb-1.5"
                 >
                   Fin
                 </label>
@@ -419,19 +409,17 @@ export const FuncionarioMenView: React.FC = () => {
           </form>
         </section>
 
-        {/* Right: Strategies Table + Detail & Linking */}
+        {/* Right: Strategies List + Detail & Linking */}
         <section className="lg:col-span-7 space-y-6">
           <div className="sses-card overflow-hidden">
-            <div className="px-6 py-4 border-b border-[#E5E7EB] flex items-center justify-between gap-2">
-              <h2 className="text-sm font-medium text-[#0F172A]">
-                Registradas
-              </h2>
-              <span className="sses-mono text-xs text-[#64748B]">
+            <div className="px-6 py-4 border-b border-border-subtle flex items-center justify-between gap-2">
+              <h2 className="text-sm font-medium text-ink">Registradas</h2>
+              <span className="sses-mono text-xs text-ink-secondary">
                 {state.estrategias.length}
               </span>
             </div>
 
-            <div className="divide-y divide-[#E5E7EB]">
+            <div className="divide-y divide-border-subtle">
               {state.estrategias.map((est) => {
                 const ent = entidadesById.get(est.entidadId);
                 const isSelected = selectedStrategy?.id === est.id;
@@ -452,23 +440,23 @@ export const FuncionarioMenView: React.FC = () => {
                       }
                     }}
                     aria-pressed={isSelected}
-                    className={`w-full text-left px-6 py-4 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0284C7] ${
+                    className={`w-full text-left px-6 py-4 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-accent ${
                       isSelected
-                        ? 'bg-[#F0F9FF]/70 border-l-2 border-l-[#0284C7]'
-                        : 'hover:bg-[#FAFAFA] border-l-2 border-l-transparent'
+                        ? 'bg-brand-soft border-l-2 border-l-brand-primary'
+                        : 'hover:bg-surface-hover border-l-2 border-l-transparent'
                     }`}
                   >
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="min-w-0 space-y-0.5">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="sses-mono text-xs text-[#0284C7]">
+                          <span className="sses-mono text-xs text-brand-accent">
                             {est.id}
                           </span>
-                          <span className="text-sm font-medium text-[#0F172A] truncate">
+                          <span className="text-sm font-medium text-ink truncate">
                             {est.nombre}
                           </span>
                         </div>
-                        <div className="text-xs text-[#64748B]">
+                        <div className="text-xs text-ink-secondary">
                           {ent?.nombre ?? est.entidadId} ·{' '}
                           <span className="sses-mono">
                             {est.fechaInicio} → {est.fechaFin}
@@ -489,7 +477,7 @@ export const FuncionarioMenView: React.FC = () => {
                         </StatusBadge>
                         <span
                           title="Estudiantes vinculados"
-                          className="sses-mono text-xs text-[#64748B] min-w-[2rem] text-right"
+                          className="sses-mono text-xs text-ink-secondary min-w-[2.5rem] text-right"
                         >
                           {est.estudianteIds.length} est.
                         </span>
@@ -501,20 +489,19 @@ export const FuncionarioMenView: React.FC = () => {
             </div>
           </div>
 
-          {/* Selected Strategy Detail & Linking */}
           {selectedStrategy && (
             <div className="sses-card p-6 space-y-6">
-              <div className="flex flex-wrap items-start justify-between gap-4 pb-4 border-b border-[#E5E7EB]">
+              <div className="flex flex-wrap items-start justify-between gap-4 pb-4 border-b border-border-subtle">
                 <div className="space-y-1 min-w-0">
-                  <div className="sses-mono text-xs text-[#64748B]">
+                  <div className="sses-mono text-xs text-ink-secondary">
                     {selectedStrategy.id} ·{' '}
                     {entidadesById.get(selectedStrategy.entidadId)?.nombre}
                   </div>
-                  <h3 className="text-base font-medium text-[#0F172A]">
+                  <h3 className="text-base font-medium text-ink">
                     {selectedStrategy.nombre}
                   </h3>
                   {selectedStrategy.descripcion && (
-                    <p className="text-xs text-[#64748B]">
+                    <p className="text-xs text-ink-secondary">
                       {selectedStrategy.descripcion}
                     </p>
                   )}
@@ -554,17 +541,15 @@ export const FuncionarioMenView: React.FC = () => {
                 <div
                   role="status"
                   title="Por normativa SSES, al vincular estudiantes la edición de datos base queda bloqueada permanentemente."
-                  className="sses-notice-danger flex items-center justify-between gap-3"
+                  className="sses-notice-danger flex items-center gap-2"
                 >
-                  <span className="flex items-center gap-2">
-                    <Lock className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
-                    <span>
-                      Inmutable ({selectedStrategy.estado}) ·{' '}
-                      <span className="sses-mono">
-                        {selectedStrategy.estudianteIds.length}
-                      </span>{' '}
-                      vinculados
-                    </span>
+                  <Lock className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
+                  <span>
+                    Inmutable ({selectedStrategy.estado}) ·{' '}
+                    <span className="sses-mono">
+                      {selectedStrategy.estudianteIds.length}
+                    </span>{' '}
+                    vinculados
                   </span>
                 </div>
               )}
@@ -575,29 +560,28 @@ export const FuncionarioMenView: React.FC = () => {
                 </div>
               )}
 
-              {/* Inline Edit Form */}
               {editingId === selectedStrategy.id &&
                 puedeEditarEstrategia(selectedStrategy) && (
                   <form
                     onSubmit={handleSaveEdit}
-                    className="p-4 rounded-xl bg-[#FAFAFA] border border-[#E5E7EB] space-y-4"
+                    className="p-4 rounded-xl bg-elevated border border-border-subtle space-y-4"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-[#0F172A]">
+                      <span className="text-xs font-medium text-ink">
                         Editar · {selectedStrategy.id}
                       </span>
                       <button
                         type="button"
                         onClick={() => setEditingId(null)}
                         aria-label="Cerrar edición"
-                        className="text-[#64748B] hover:text-[#0F172A] rounded"
+                        className="text-ink-secondary hover:text-ink rounded"
                       >
                         <X className="h-4 w-4" strokeWidth={1.5} />
                       </button>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-[#64748B] mb-1">
+                      <label className="block text-xs font-medium text-ink-secondary mb-1">
                         Nombre
                       </label>
                       <input
@@ -610,7 +594,7 @@ export const FuncionarioMenView: React.FC = () => {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-[#64748B] mb-1">
+                      <label className="block text-xs font-medium text-ink-secondary mb-1">
                         Descripción
                       </label>
                       <textarea
@@ -623,7 +607,7 @@ export const FuncionarioMenView: React.FC = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div>
-                        <label className="block text-xs font-medium text-[#64748B] mb-1">
+                        <label className="block text-xs font-medium text-ink-secondary mb-1">
                           Entidad
                         </label>
                         <select
@@ -643,7 +627,7 @@ export const FuncionarioMenView: React.FC = () => {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-[#64748B] mb-1">
+                        <label className="block text-xs font-medium text-ink-secondary mb-1">
                           Inicio
                         </label>
                         <input
@@ -655,7 +639,7 @@ export const FuncionarioMenView: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-[#64748B] mb-1">
+                        <label className="block text-xs font-medium text-ink-secondary mb-1">
                           Fin
                         </label>
                         <input
@@ -692,16 +676,16 @@ export const FuncionarioMenView: React.FC = () => {
               {/* Linked Students */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-[#64748B]">
+                  <span className="text-xs font-medium text-ink-secondary">
                     Estudiantes vinculados
                   </span>
-                  <span className="sses-mono text-xs text-[#64748B]">
+                  <span className="sses-mono text-xs text-ink-secondary">
                     {selectedStrategy.estudianteIds.length}
                   </span>
                 </div>
 
                 {selectedStrategy.estudianteIds.length === 0 ? (
-                  <div className="text-xs text-[#64748B] bg-[#FAFAFA] px-4 py-3 rounded-lg border border-[#E5E7EB]">
+                  <div className="text-xs text-ink-secondary bg-elevated px-4 py-3 rounded-lg border border-border-subtle">
                     Sin estudiantes vinculados
                   </div>
                 ) : (
@@ -712,13 +696,13 @@ export const FuncionarioMenView: React.FC = () => {
                       return (
                         <div
                           key={id}
-                          className="flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-[#FAFAFA] border border-[#E5E7EB] text-xs"
+                          className="flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-elevated border border-border-subtle text-xs"
                         >
                           <div className="min-w-0">
-                            <div className="font-medium text-[#0F172A] truncate">
+                            <div className="font-medium text-ink truncate">
                               {est.nombreCompleto}
                             </div>
-                            <div className="sses-mono text-[#64748B] text-[11px]">
+                            <div className="sses-mono text-ink-secondary text-[11px]">
                               {est.tipoDocumento} {est.numeroDocumento} ·{' '}
                               {est.grado}
                             </div>
@@ -731,15 +715,15 @@ export const FuncionarioMenView: React.FC = () => {
               </div>
 
               {/* Linking Panel */}
-              <div className="border-t border-[#E5E7EB] pt-6 space-y-4">
+              <div className="border-t border-border-subtle pt-6 space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <span className="text-sm font-medium text-[#0F172A]">
+                  <span className="text-sm font-medium text-ink">
                     Vincular estudiantes
                   </span>
                   <div
                     role="tablist"
                     aria-label="Modo de vinculación"
-                    className="inline-flex rounded-lg bg-[#FAFAFA] border border-[#E5E7EB] p-0.5 text-xs"
+                    className="inline-flex rounded-lg bg-elevated border border-border-subtle p-0.5 text-xs"
                   >
                     <button
                       type="button"
@@ -748,8 +732,8 @@ export const FuncionarioMenView: React.FC = () => {
                       onClick={() => setLinkTab('INDIVIDUAL')}
                       className={`px-3 py-1 rounded-md font-medium transition-colors duration-150 ${
                         linkTab === 'INDIVIDUAL'
-                          ? 'bg-[#1E3A8A] text-white'
-                          : 'text-[#64748B] hover:text-[#0F172A]'
+                          ? 'bg-brand-primary text-[var(--brand-primary-text)]'
+                          : 'text-ink-secondary hover:text-ink'
                       }`}
                     >
                       Individual
@@ -761,8 +745,8 @@ export const FuncionarioMenView: React.FC = () => {
                       onClick={() => setLinkTab('MASIVA')}
                       className={`px-3 py-1 rounded-md font-medium transition-colors duration-150 ${
                         linkTab === 'MASIVA'
-                          ? 'bg-[#1E3A8A] text-white'
-                          : 'text-[#64748B] hover:text-[#0F172A]'
+                          ? 'bg-brand-primary text-[var(--brand-primary-text)]'
+                          : 'text-ink-secondary hover:text-ink'
                       }`}
                     >
                       Masiva
@@ -775,7 +759,7 @@ export const FuncionarioMenView: React.FC = () => {
                     <div className="relative">
                       <Search
                         aria-hidden="true"
-                        className="h-3.5 w-3.5 text-[#64748B] absolute left-3 top-2.5"
+                        className="h-3.5 w-3.5 text-ink-secondary absolute left-3 top-2.5"
                         strokeWidth={1.5}
                       />
                       <input
@@ -789,21 +773,21 @@ export const FuncionarioMenView: React.FC = () => {
                     </div>
 
                     {availableStudentsForSelected.length === 0 ? (
-                      <div className="text-xs text-[#64748B] px-4 py-3 bg-[#FAFAFA] border border-[#E5E7EB] rounded-lg">
+                      <div className="text-xs text-ink-secondary px-4 py-3 bg-elevated border border-border-subtle rounded-lg">
                         Sin estudiantes disponibles
                       </div>
                     ) : (
-                      <div className="divide-y divide-[#E5E7EB] border border-[#E5E7EB] rounded-lg max-h-56 overflow-y-auto">
+                      <div className="divide-y divide-border-subtle border border-border-subtle rounded-lg max-h-56 overflow-y-auto">
                         {availableStudentsForSelected.map((est) => (
                           <div
                             key={est.id}
-                            className="flex items-center justify-between gap-3 px-4 py-2.5 bg-white hover:bg-[#FAFAFA] transition-colors text-xs"
+                            className="flex items-center justify-between gap-3 px-4 py-2.5 bg-surface hover:bg-surface-hover transition-colors text-xs"
                           >
                             <div className="min-w-0">
-                              <div className="font-medium text-[#0F172A] truncate">
+                              <div className="font-medium text-ink truncate">
                                 {est.nombreCompleto}
                               </div>
-                              <div className="sses-mono text-[#64748B] text-[11px]">
+                              <div className="sses-mono text-ink-secondary text-[11px]">
                                 {est.tipoDocumento} {est.numeroDocumento} ·{' '}
                                 {est.grado}
                               </div>
@@ -827,9 +811,9 @@ export const FuncionarioMenView: React.FC = () => {
                 ) : (
                   <form onSubmit={handleLinkBulk} className="space-y-3">
                     {sampleEntityDocs && (
-                      <div className="text-xs text-[#64748B] flex flex-wrap items-center gap-1.5">
+                      <div className="text-xs text-ink-secondary flex flex-wrap items-center gap-1.5">
                         <span>Disponibles:</span>
-                        <code className="sses-mono text-[11px] text-[#0F172A] bg-[#FAFAFA] border border-[#E5E7EB] px-2 py-0.5 rounded">
+                        <code className="sses-mono text-[11px] text-ink bg-elevated border border-border-subtle px-2 py-0.5 rounded">
                           {sampleEntityDocs}
                         </code>
                       </div>
@@ -862,36 +846,36 @@ export const FuncionarioMenView: React.FC = () => {
                 )}
 
                 {lastLinkResult && (
-                  <div className="p-4 rounded-lg bg-[#FAFAFA] border border-[#E5E7EB] text-xs space-y-3">
+                  <div className="p-4 rounded-lg bg-elevated border border-border-subtle text-xs space-y-3">
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      <div className="p-2.5 rounded-lg bg-white border border-[#E5E7EB]">
-                        <div className="sses-kpi-value text-lg text-[#059669]">
+                      <div className="p-2.5 rounded-lg bg-surface border border-border-subtle">
+                        <div className="sses-kpi-value text-lg text-status-emerald">
                           {lastLinkResult.vinculados.length}
                         </div>
-                        <div className="text-[#64748B]">Vinculados</div>
+                        <div className="text-ink-secondary">Vinculados</div>
                       </div>
-                      <div className="p-2.5 rounded-lg bg-white border border-[#E5E7EB]">
-                        <div className="sses-kpi-value text-lg text-[#0F172A]">
+                      <div className="p-2.5 rounded-lg bg-surface border border-border-subtle">
+                        <div className="sses-kpi-value text-lg text-ink">
                           {lastLinkResult.yaVinculados.length}
                         </div>
-                        <div className="text-[#64748B]">Duplicados</div>
+                        <div className="text-ink-secondary">Duplicados</div>
                       </div>
-                      <div className="p-2.5 rounded-lg bg-white border border-[#E5E7EB]">
-                        <div className="sses-kpi-value text-lg text-[#DC2626]">
+                      <div className="p-2.5 rounded-lg bg-surface border border-border-subtle">
+                        <div className="sses-kpi-value text-lg text-status-danger">
                           {lastLinkResult.otraEntidad.length}
                         </div>
-                        <div className="text-[#64748B]">Otra entidad</div>
+                        <div className="text-ink-secondary">Otra entidad</div>
                       </div>
-                      <div className="p-2.5 rounded-lg bg-white border border-[#E5E7EB]">
-                        <div className="sses-kpi-value text-lg text-[#D97706]">
+                      <div className="p-2.5 rounded-lg bg-surface border border-border-subtle">
+                        <div className="sses-kpi-value text-lg text-status-amber">
                           {lastLinkResult.noEncontrados.length}
                         </div>
-                        <div className="text-[#64748B]">No hallados</div>
+                        <div className="text-ink-secondary">No hallados</div>
                       </div>
                     </div>
 
                     {lastLinkResult.otraEntidad.length > 0 && (
-                      <div className="text-[#991B1B]">
+                      <div className="text-[var(--badge-danger-text)]">
                         Otra entidad:{' '}
                         <span className="sses-mono">
                           {lastLinkResult.otraEntidad.join(', ')}
@@ -899,7 +883,7 @@ export const FuncionarioMenView: React.FC = () => {
                       </div>
                     )}
                     {lastLinkResult.yaVinculados.length > 0 && (
-                      <div className="text-[#64748B]">
+                      <div className="text-ink-secondary">
                         Omitidos:{' '}
                         <span className="sses-mono">
                           {lastLinkResult.yaVinculados.join(', ')}
@@ -907,7 +891,7 @@ export const FuncionarioMenView: React.FC = () => {
                       </div>
                     )}
                     {lastLinkResult.noEncontrados.length > 0 && (
-                      <div className="text-[#92400E]">
+                      <div className="text-[var(--badge-warning-text)]">
                         No hallados:{' '}
                         <span className="sses-mono">
                           {lastLinkResult.noEncontrados.join(', ')}
