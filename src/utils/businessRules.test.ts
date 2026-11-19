@@ -8,7 +8,10 @@ import type {
 import {
   aplicarEdicionEstrategia,
   enmascararDocumentoLey1581,
+  procesarCargaMasivaEstudiantes,
   puedeEditarEstrategia,
+  validarEstudianteInput,
+  validarTutorInput,
   vincularEstudiantesAEstrategia,
 } from './businessRules';
 import {
@@ -204,5 +207,85 @@ describe('SSES Reglas de Negocio Críticas (MEN Colombia)', () => {
     // Documento corto (<= 4 dígitos): no debe exponer ningún dígito
     expect(enmascararDocumentoLey1581('CC', '4821')).toBe('CC ******');
     expect(enmascararDocumentoLey1581('CE', '12')).toBe('CE ******');
+  });
+
+  it('4. Valida registro manual y carga masiva de estudiantes y tutores para Funcionario MEN', () => {
+    // Registro manual válido y rechazo por duplicado
+    const okEst = validarEstudianteInput(
+      {
+        tipoDocumento: 'TI',
+        numeroDocumento: '1020555111',
+        nombreCompleto: 'Lucía Fernanda Pérez',
+        entidadId: 'ENT-001',
+        grado: '10°',
+      },
+      ENTIDADES_TEST,
+      ESTUDIANTES_TEST
+    );
+    expect(okEst.valid).toBe(true);
+
+    const dupEst = validarEstudianteInput(
+      {
+        tipoDocumento: 'TI',
+        numeroDocumento: '1020304821',
+        nombreCompleto: 'Duplicado Test',
+        entidadId: 'ENT-001',
+        grado: '10°',
+      },
+      ENTIDADES_TEST,
+      ESTUDIANTES_TEST
+    );
+    expect(dupEst.valid).toBe(false);
+
+    // Carga masiva con encabezado CSV, registro válido, duplicado e inválido
+    const bulk = procesarCargaMasivaEstudiantes(
+      [
+        'tipoDocumento,numeroDocumento,nombreCompleto,grado',
+        'TI, 1020555222, Tomás Herrera Gil, 11°',
+        'TI, 1020304821, Ya Existe, 10°',
+        'XX, 123, Corto, 9°',
+      ].join('\n'),
+      'ENT-001',
+      ENTIDADES_TEST,
+      ESTUDIANTES_TEST
+    );
+    expect(bulk.creados).toHaveLength(1);
+    expect(bulk.creados[0].numeroDocumento).toBe('1020555222');
+    expect(bulk.duplicados).toEqual(['1020304821']);
+    expect(bulk.invalidos).toHaveLength(1);
+
+    // Registro manual de tutor válido y duplicado
+    const tutoresExistentes = [
+      {
+        id: 'TUT-001',
+        tipoDocumento: 'CC' as const,
+        numeroDocumento: '80124589',
+        nombreCompleto: 'Alejandro Ramírez',
+        zonaAsignada: 'Región Andina',
+      },
+    ];
+    expect(
+      validarTutorInput(
+        {
+          tipoDocumento: 'CC',
+          numeroDocumento: '80999111',
+          nombreCompleto: 'Andrea Castro',
+          zonaAsignada: 'Región Caribe',
+        },
+        tutoresExistentes
+      ).valid
+    ).toBe(true);
+
+    expect(
+      validarTutorInput(
+        {
+          tipoDocumento: 'CC',
+          numeroDocumento: '80124589',
+          nombreCompleto: 'Tutor Duplicado',
+          zonaAsignada: 'Región Caribe',
+        },
+        tutoresExistentes
+      ).valid
+    ).toBe(false);
   });
 });

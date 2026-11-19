@@ -2,6 +2,8 @@ import type {
   Acompanamiento,
   AcompanamientoInput,
   AlertaAtraso,
+  BulkCreateEstudianteError,
+  BulkCreateEstudiantesResult,
   BulkLinkResult,
   Docente,
   Entidad,
@@ -10,8 +12,12 @@ import type {
   Estrategia,
   EstrategiaInput,
   Estudiante,
+  EstudianteInput,
   KpiResumen,
   SemanaSeguimiento,
+  TipoDocumento,
+  Tutor,
+  TutorInput,
   ValidationResult,
 } from '../types/sses';
 
@@ -452,5 +458,248 @@ export function calcularKpisCumplimiento(
     porcentajeCumplimiento,
     totalAlertas: alertas.length,
     alertas,
+  };
+}
+
+const VALID_TIPOS_DOCUMENTO: ReadonlySet<string> = new Set<TipoDocumento>([
+  'CC',
+  'TI',
+  'CE',
+  'PPT',
+]);
+
+function limpiarNumeroDocumentoCatalogo(raw: string): string {
+  return raw.trim().replace(/\s+/g, '');
+}
+
+/**
+ * Validates manual student creation for Funcionario MEN:
+ * - Valid document type (CC, TI, CE, PPT)
+ * - Document number (>= 5 chars) not duplicated in catalog
+ * - Full name (>= 3 chars), grade non-empty, active entity
+ */
+export function validarEstudianteInput(
+  input: EstudianteInput,
+  entidades: Entidad[],
+  estudiantesExistentes: Estudiante[]
+): ValidationResult {
+  const errors: string[] = [];
+
+  if (!VALID_TIPOS_DOCUMENTO.has(input.tipoDocumento)) {
+    errors.push('Tipo de documento inválido (use CC, TI, CE o PPT).');
+  }
+
+  const numeroLimpio = limpiarNumeroDocumentoCatalogo(input.numeroDocumento);
+  if (!numeroLimpio || numeroLimpio.length < 5) {
+    errors.push('El número de documento debe tener al menos 5 caracteres.');
+  } else if (
+    estudiantesExistentes.some(
+      (e) => e.numeroDocumento.trim() === numeroLimpio
+    )
+  ) {
+    errors.push(`Ya existe un estudiante con el documento ${numeroLimpio}.`);
+  }
+
+  if (!input.nombreCompleto || input.nombreCompleto.trim().length < 3) {
+    errors.push('El nombre completo debe tener al menos 3 caracteres.');
+  }
+
+  if (!input.grado || input.grado.trim().length === 0) {
+    errors.push('Debe indicar el grado del estudiante.');
+  }
+
+  const entidad = entidades.find((e) => e.id === input.entidadId);
+  if (!entidad) {
+    errors.push('Debe seleccionar una entidad educativa válida.');
+  } else if (entidad.estado !== 'ACTIVA') {
+    errors.push(
+      `La entidad "${entidad.nombre}" está INACTIVA y no permite nuevos estudiantes.`
+    );
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  };
+}
+
+/**
+ * Parses and validates bulk student rows (CSV/semicolon lines) for Funcionario MEN.
+ * Supported formats per line:
+ * - tipoDocumento, numeroDocumento, nombreCompleto, grado [, entidadId]
+ * - numeroDocumento, nombreCompleto, grado  (defaults tipoDocumento to 'TI')
+ */
+export function procesarCargaMasivaEstudiantes(
+  texto: string,
+  entidadIdPorDefecto: string,
+  entidades: Entidad[],
+  estudiantesExistentes: Estudiante[]
+): BulkCreateEstudiantesResult {
+  const lines = texto.split(/\r?\n/);
+  const existingDocs = new Set(
+    estudiantesExistentes.map((e) => e.numeroDocumento.trim())
+  );
+  const activeEntidadIds = new Set(
+    entidades.filter((e) => e.estado === 'ACTIVA').map((e) => e.id)
+  );
+
+  const creados: Estudiante[] = [];
+  const duplicados: string[] = [];
+  const invalidos: BulkCreateEstudianteError[] = [];
+
+  let nextNumericId =
+    estudiantesExistentes.reduce((max, est) => {
+      const match = /^EST-(\d+)$/.exec(est.id);
+      return match ? Math.max(max, Number.parseInt(match[1], 10)) : max;
+    }, estudiantesExistentes.length) + 1;
+
+  for (let i = 0; i < lines.length; i += 1) {
+    const rawLine = lines[i].trim();
+    if (!rawLine) continue;
+
+    const delimiter = rawLine.includes(';') ? ';' : ',';
+    const cols = rawLine.split(delimiter).map((c) => c.trim());
+
+    // Skip optional CSV header row on first non-empty line
+    const firstLower = cols[0].toLowerCase();
+    if (
+      creados.length === 0 &&
+      duplicados.length === 0 &&
+      invalidos.length === 0 &&
+      (firstLower.includes('tipo') ||
+        firstLower.includes('documento') ||
+        firstLower === 'doc')
+    ) {
+      continue;
+    }
+
+    let tipoDocRaw = 'TI';
+    let numeroRaw = '';
+    let nombreRaw = '';
+    let gradoRaw = '';
+    let entidadIdRow = entidadIdPorDefecto;
+
+    if (cols.length >= 4) {
+      [tipoDocRaw, numeroRaw, nombreRaw, gradoRaw] = cols;
+      if (cols[4]) {
+        entidadIdRow = cols[4];
+      }
+    } else if (cols.length === 3) {
+      [numeroRaw, nombreRaw, gradoRaw] = cols;
+    } else {
+      invalidos.push({
+        linea: i + 1,
+        contenido: rawLine,
+        motivo: 'Use formato: Tipo, Documento, Nombre, Grado',
+      });
+      continue;
+    }
+
+    const tipoDocumento = tipoDocRaw.toUpperCase() as TipoDocumento;
+    const numeroDocumento = limpiarNumeroDocumentoCatalogo(numeroRaw);
+    const nombreCompleto = nombreRaw.trim();
+    const grado = gradoRaw.trim();
+
+    if (!VALID_TIPOS_DOCUMENTO.has(tipoDocumento)) {
+      invalidos.push({
+        linea: i + 1,
+        contenido: rawLine,
+        motivo: `Tipo de documento inválido (${tipoDocRaw}).`,
+      });
+      continue;
+    }
+
+    if (numeroDocumento.length < 5) {
+      invalidos.push({
+        linea: i + 1,
+        contenido: rawLine,
+        motivo: 'Documento muy corto (mínimo 5 caracteres).',
+      });
+      continue;
+    }
+
+    if (nombreCompleto.length < 3) {
+      invalidos.push({
+        linea: i + 1,
+        contenido: rawLine,
+        motivo: 'Nombre muy corto (mínimo 3 caracteres).',
+      });
+      continue;
+    }
+
+    if (!grado) {
+      invalidos.push({
+        linea: i + 1,
+        contenido: rawLine,
+        motivo: 'Falta indicar el grado.',
+      });
+      continue;
+    }
+
+    if (!activeEntidadIds.has(entidadIdRow)) {
+      invalidos.push({
+        linea: i + 1,
+        contenido: rawLine,
+        motivo: 'Entidad educativa inválida o inactiva.',
+      });
+      continue;
+    }
+
+    if (existingDocs.has(numeroDocumento)) {
+      duplicados.push(numeroDocumento);
+      continue;
+    }
+
+    existingDocs.add(numeroDocumento);
+    creados.push({
+      id: `EST-${String(nextNumericId).padStart(3, '0')}`,
+      tipoDocumento,
+      numeroDocumento,
+      nombreCompleto,
+      entidadId: entidadIdRow,
+      grado,
+    });
+    nextNumericId += 1;
+  }
+
+  return { creados, duplicados, invalidos };
+}
+
+/**
+ * Validates manual tutor creation for Funcionario MEN:
+ * - Valid document type (CC, TI, CE, PPT)
+ * - Document number (>= 5 chars) not duplicated in catalog
+ * - Full name (>= 3 chars) and assigned zone (>= 3 chars)
+ */
+export function validarTutorInput(
+  input: TutorInput,
+  tutoresExistentes: Tutor[]
+): ValidationResult {
+  const errors: string[] = [];
+
+  if (!VALID_TIPOS_DOCUMENTO.has(input.tipoDocumento)) {
+    errors.push('Tipo de documento inválido (use CC, TI, CE o PPT).');
+  }
+
+  const numeroLimpio = limpiarNumeroDocumentoCatalogo(input.numeroDocumento);
+  if (!numeroLimpio || numeroLimpio.length < 5) {
+    errors.push('El número de documento debe tener al menos 5 caracteres.');
+  } else if (
+    tutoresExistentes.some((t) => t.numeroDocumento.trim() === numeroLimpio)
+  ) {
+    errors.push(`Ya existe un tutor con el documento ${numeroLimpio}.`);
+  }
+
+  if (!input.nombreCompleto || input.nombreCompleto.trim().length < 3) {
+    errors.push('El nombre completo debe tener al menos 3 caracteres.');
+  }
+
+  if (!input.zonaAsignada || input.zonaAsignada.trim().length < 3) {
+    errors.push('La zona asignada debe tener al menos 3 caracteres.');
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
   };
 }

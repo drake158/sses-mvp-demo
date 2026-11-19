@@ -21,6 +21,9 @@ export type TipoAccionAuditoria =
   | 'CREAR_ESTRATEGIA'
   | 'EDITAR_ESTRATEGIA'
   | 'VINCULAR_ESTUDIANTES'
+  | 'CREAR_ESTUDIANTE'
+  | 'CARGA_MASIVA_ESTUDIANTES'
+  | 'CREAR_TUTOR'
   | 'REGISTRAR_ACOMPANAMIENTO'
   | 'ACTUALIZAR_SEMANA'
   | 'SINCRONIZACION_OFFLINE'
@@ -165,6 +168,33 @@ export interface BulkLinkResult {
   yaVinculados: string[];
   otraEntidad: string[];
   noEncontrados: string[];
+}
+
+export interface EstudianteInput {
+  tipoDocumento: TipoDocumento;
+  numeroDocumento: string;
+  nombreCompleto: string;
+  entidadId: string;
+  grado: string;
+}
+
+export interface BulkCreateEstudianteError {
+  linea: number;
+  contenido: string;
+  motivo: string;
+}
+
+export interface BulkCreateEstudiantesResult {
+  creados: Estudiante[];
+  duplicados: string[];
+  invalidos: BulkCreateEstudianteError[];
+}
+
+export interface TutorInput {
+  tipoDocumento: TipoDocumento;
+  numeroDocumento: string;
+  nombreCompleto: string;
+  zonaAsignada: string;
 }
 
 export interface AcompanamientoInput {

@@ -15,11 +15,14 @@ import type {
   Acompanamiento,
   AcompanamientoInput,
   AuditLogEntry,
+  BulkCreateEstudiantesResult,
   BulkLinkResult,
   ConstanciaReporte,
   EstadoSemana,
   Estrategia,
   EstrategiaInput,
+  Estudiante,
+  EstudianteInput,
   IntegrityCheckResult,
   MutationResult,
   OfflineQueueItem,
@@ -28,13 +31,18 @@ import type {
   SsesState,
   SyncResult,
   TipoAccionAuditoria,
+  Tutor,
+  TutorInput,
 } from '../types/sses';
 import {
   aplicarEdicionEstrategia,
   generarCuatroSemanasPendientes,
+  procesarCargaMasivaEstudiantes,
   validarAcompanamientoInput,
   validarAvanceSemanal,
   validarEstrategiaInput,
+  validarEstudianteInput,
+  validarTutorInput,
   vincularEstudiantesAEstrategia,
 } from '../utils/businessRules';
 import {
@@ -130,6 +138,14 @@ export interface SsesContextValue {
     estrategiaId: string,
     documentos: string[]
   ) => Promise<MutationResult<BulkLinkResult>>;
+  crearEstudiante: (
+    input: EstudianteInput
+  ) => Promise<MutationResult<Estudiante>>;
+  crearEstudiantesMasivo: (
+    entidadId: string,
+    textoCsv: string
+  ) => Promise<MutationResult<BulkCreateEstudiantesResult>>;
+  crearTutor: (input: TutorInput) => Promise<MutationResult<Tutor>>;
   registrarAcompanamiento: (
     input: AcompanamientoInput
   ) => Promise<MutationResult<Acompanamiento>>;
@@ -665,6 +681,206 @@ export const SsesProvider: React.FC<{ children: React.ReactNode }> = ({
     [commitMutation]
   );
 
+  const crearEstudiante = useCallback(
+    async (input: EstudianteInput): Promise<MutationResult<Estudiante>> => {
+      const validation = validarEstudianteInput(
+        input,
+        stateRef.current.entidades,
+        stateRef.current.estudiantes
+      );
+      if (!validation.valid) {
+        return {
+          ok: false,
+          error: validation.errors[0],
+          errors: validation.errors,
+        };
+      }
+
+      return commitMutation(async (current) => {
+        const recheck = validarEstudianteInput(
+          input,
+          current.entidades,
+          current.estudiantes
+        );
+        if (!recheck.valid) {
+          throw new Error(recheck.errors.join(' '));
+        }
+
+        const nextNum =
+          current.estudiantes.reduce((max, est) => {
+            const match = /^EST-(\d+)$/.exec(est.id);
+            return match ? Math.max(max, Number.parseInt(match[1], 10)) : max;
+          }, current.estudiantes.length) + 1;
+
+        const nuevo: Estudiante = {
+          id: `EST-${String(nextNum).padStart(3, '0')}`,
+          tipoDocumento: input.tipoDocumento,
+          numeroDocumento: input.numeroDocumento.trim().replace(/\s+/g, ''),
+          nombreCompleto: input.nombreCompleto.trim(),
+          entidadId: input.entidadId,
+          grado: input.grado.trim(),
+        };
+
+        return {
+          nextState: {
+            ...current,
+            estudiantes: [...current.estudiantes, nuevo],
+          },
+          audit: {
+            rol: 'FUNCIONARIO_MEN',
+            accion: 'CREAR_ESTUDIANTE',
+            entidadAfectada: 'Estudiante',
+            registroId: nuevo.id,
+            valoresAnteriores: null,
+            valoresNuevos: {
+              id: nuevo.id,
+              tipoDocumento: nuevo.tipoDocumento,
+              numeroDocumento: nuevo.numeroDocumento,
+              nombreCompleto: nuevo.nombreCompleto,
+              entidadId: nuevo.entidadId,
+              grado: nuevo.grado,
+            },
+          },
+          result: { ok: true as const, data: nuevo },
+        };
+      }).catch((err: unknown) => ({
+        ok: false as const,
+        error:
+          err instanceof Error
+            ? err.message
+            : 'No se pudo registrar el estudiante.',
+      }));
+    },
+    [commitMutation]
+  );
+
+  const crearEstudiantesMasivo = useCallback(
+    async (
+      entidadId: string,
+      textoCsv: string
+    ): Promise<MutationResult<BulkCreateEstudiantesResult>> => {
+      if (!textoCsv.trim()) {
+        return {
+          ok: false,
+          error: 'Ingrese o cargue al menos una fila de estudiantes.',
+        };
+      }
+
+      const entidad = stateRef.current.entidades.find(
+        (e) => e.id === entidadId
+      );
+      if (!entidad || entidad.estado !== 'ACTIVA') {
+        return {
+          ok: false,
+          error: 'Debe seleccionar una entidad educativa ACTIVA.',
+        };
+      }
+
+      return commitMutation(async (current) => {
+        const bulkResult = procesarCargaMasivaEstudiantes(
+          textoCsv,
+          entidadId,
+          current.entidades,
+          current.estudiantes
+        );
+
+        return {
+          nextState: {
+            ...current,
+            estudiantes: [...current.estudiantes, ...bulkResult.creados],
+          },
+          audit: {
+            rol: 'FUNCIONARIO_MEN',
+            accion: 'CARGA_MASIVA_ESTUDIANTES',
+            entidadAfectada: 'Estudiante',
+            registroId: entidadId,
+            valoresAnteriores: {
+              totalEstudiantes: current.estudiantes.length,
+            },
+            valoresNuevos: {
+              totalEstudiantes:
+                current.estudiantes.length + bulkResult.creados.length,
+              creadosIds: bulkResult.creados.map((e) => e.id),
+              duplicados: bulkResult.duplicados,
+              invalidos: bulkResult.invalidos.length,
+            },
+          },
+          result: { ok: true as const, data: bulkResult },
+        };
+      }).catch((err: unknown) => ({
+        ok: false as const,
+        error:
+          err instanceof Error
+            ? err.message
+            : 'No se pudo procesar la carga masiva de estudiantes.',
+      }));
+    },
+    [commitMutation]
+  );
+
+  const crearTutor = useCallback(
+    async (input: TutorInput): Promise<MutationResult<Tutor>> => {
+      const validation = validarTutorInput(input, stateRef.current.tutores);
+      if (!validation.valid) {
+        return {
+          ok: false,
+          error: validation.errors[0],
+          errors: validation.errors,
+        };
+      }
+
+      return commitMutation(async (current) => {
+        const recheck = validarTutorInput(input, current.tutores);
+        if (!recheck.valid) {
+          throw new Error(recheck.errors.join(' '));
+        }
+
+        const nextNum =
+          current.tutores.reduce((max, tut) => {
+            const match = /^TUT-(\d+)$/.exec(tut.id);
+            return match ? Math.max(max, Number.parseInt(match[1], 10)) : max;
+          }, current.tutores.length) + 1;
+
+        const nuevo: Tutor = {
+          id: `TUT-${String(nextNum).padStart(3, '0')}`,
+          tipoDocumento: input.tipoDocumento,
+          numeroDocumento: input.numeroDocumento.trim().replace(/\s+/g, ''),
+          nombreCompleto: input.nombreCompleto.trim(),
+          zonaAsignada: input.zonaAsignada.trim(),
+        };
+
+        return {
+          nextState: {
+            ...current,
+            tutores: [...current.tutores, nuevo],
+          },
+          audit: {
+            rol: 'FUNCIONARIO_MEN',
+            accion: 'CREAR_TUTOR',
+            entidadAfectada: 'Tutor',
+            registroId: nuevo.id,
+            valoresAnteriores: null,
+            valoresNuevos: {
+              id: nuevo.id,
+              tipoDocumento: nuevo.tipoDocumento,
+              numeroDocumento: nuevo.numeroDocumento,
+              nombreCompleto: nuevo.nombreCompleto,
+              zonaAsignada: nuevo.zonaAsignada,
+            },
+          },
+          result: { ok: true as const, data: nuevo },
+        };
+      }).catch((err: unknown) => ({
+        ok: false as const,
+        error:
+          err instanceof Error
+            ? err.message
+            : 'No se pudo registrar el tutor.',
+      }));
+    },
+    [commitMutation]
+  );
+
   const registrarAcompanamiento = useCallback(
     async (
       input: AcompanamientoInput
@@ -1005,6 +1221,9 @@ export const SsesProvider: React.FC<{ children: React.ReactNode }> = ({
       crearEstrategia,
       editarEstrategia,
       vincularEstudiantes,
+      crearEstudiante,
+      crearEstudiantesMasivo,
+      crearTutor,
       registrarAcompanamiento,
       actualizarAvanceSemanal,
       sincronizarColaOffline,
@@ -1025,6 +1244,9 @@ export const SsesProvider: React.FC<{ children: React.ReactNode }> = ({
       crearEstrategia,
       editarEstrategia,
       vincularEstudiantes,
+      crearEstudiante,
+      crearEstudiantesMasivo,
+      crearTutor,
       registrarAcompanamiento,
       actualizarAvanceSemanal,
       sincronizarColaOffline,
