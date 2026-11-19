@@ -564,7 +564,7 @@ export const FuncionarioMenView: React.FC = () => {
                 puedeEditarEstrategia(selectedStrategy) && (
                   <form
                     onSubmit={handleSaveEdit}
-                    className="p-4 rounded-xl bg-elevated border border-border-subtle space-y-4"
+                    className="p-4 rounded bg-elevated border border-border-subtle space-y-4"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-medium text-ink">
@@ -685,7 +685,7 @@ export const FuncionarioMenView: React.FC = () => {
                 </div>
 
                 {selectedStrategy.estudianteIds.length === 0 ? (
-                  <div className="text-xs text-ink-secondary bg-elevated px-4 py-3 rounded-lg border border-border-subtle">
+                  <div className="text-xs text-ink-secondary bg-elevated px-4 py-3 rounded border border-border-subtle">
                     Sin estudiantes vinculados
                   </div>
                 ) : (
@@ -696,7 +696,7 @@ export const FuncionarioMenView: React.FC = () => {
                       return (
                         <div
                           key={id}
-                          className="flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-elevated border border-border-subtle text-xs"
+                          className="flex items-center justify-between px-3.5 py-2.5 rounded bg-elevated border border-border-subtle text-xs"
                         >
                           <div className="min-w-0">
                             <div className="font-medium text-ink truncate">
@@ -723,14 +723,14 @@ export const FuncionarioMenView: React.FC = () => {
                   <div
                     role="tablist"
                     aria-label="Modo de vinculación"
-                    className="inline-flex rounded-lg bg-elevated border border-border-subtle p-0.5 text-xs"
+                    className="inline-flex rounded bg-elevated border border-border-subtle p-0.5 text-xs"
                   >
                     <button
                       type="button"
                       role="tab"
                       aria-selected={linkTab === 'INDIVIDUAL'}
                       onClick={() => setLinkTab('INDIVIDUAL')}
-                      className={`px-3 py-1 rounded-md font-medium transition-colors duration-150 ${
+                      className={`px-3 py-1 rounded-sm font-medium transition-colors duration-150 ${
                         linkTab === 'INDIVIDUAL'
                           ? 'bg-brand-primary text-[var(--brand-primary-text)]'
                           : 'text-ink-secondary hover:text-ink'
@@ -743,7 +743,7 @@ export const FuncionarioMenView: React.FC = () => {
                       role="tab"
                       aria-selected={linkTab === 'MASIVA'}
                       onClick={() => setLinkTab('MASIVA')}
-                      className={`px-3 py-1 rounded-md font-medium transition-colors duration-150 ${
+                      className={`px-3 py-1 rounded-sm font-medium transition-colors duration-150 ${
                         linkTab === 'MASIVA'
                           ? 'bg-brand-primary text-[var(--brand-primary-text)]'
                           : 'text-ink-secondary hover:text-ink'
@@ -773,11 +773,11 @@ export const FuncionarioMenView: React.FC = () => {
                     </div>
 
                     {availableStudentsForSelected.length === 0 ? (
-                      <div className="text-xs text-ink-secondary px-4 py-3 bg-elevated border border-border-subtle rounded-lg">
+                      <div className="text-xs text-ink-secondary px-4 py-3 bg-elevated border border-border-subtle rounded">
                         Sin estudiantes disponibles
                       </div>
                     ) : (
-                      <div className="divide-y divide-border-subtle border border-border-subtle rounded-lg max-h-56 overflow-y-auto">
+                      <div className="divide-y divide-border-subtle border border-border-subtle rounded max-h-56 overflow-y-auto">
                         {availableStudentsForSelected.map((est) => (
                           <div
                             key={est.id}
@@ -846,27 +846,27 @@ export const FuncionarioMenView: React.FC = () => {
                 )}
 
                 {lastLinkResult && (
-                  <div className="p-4 rounded-lg bg-elevated border border-border-subtle text-xs space-y-3">
+                  <div className="p-4 rounded bg-elevated border border-border-subtle text-xs space-y-3">
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      <div className="p-2.5 rounded-lg bg-surface border border-border-subtle">
+                      <div className="p-2.5 rounded bg-surface border border-border-subtle">
                         <div className="sses-kpi-value text-lg text-status-emerald">
                           {lastLinkResult.vinculados.length}
                         </div>
                         <div className="text-ink-secondary">Vinculados</div>
                       </div>
-                      <div className="p-2.5 rounded-lg bg-surface border border-border-subtle">
+                      <div className="p-2.5 rounded bg-surface border border-border-subtle">
                         <div className="sses-kpi-value text-lg text-ink">
                           {lastLinkResult.yaVinculados.length}
                         </div>
                         <div className="text-ink-secondary">Duplicados</div>
                       </div>
-                      <div className="p-2.5 rounded-lg bg-surface border border-border-subtle">
+                      <div className="p-2.5 rounded bg-surface border border-border-subtle">
                         <div className="sses-kpi-value text-lg text-status-danger">
                           {lastLinkResult.otraEntidad.length}
                         </div>
                         <div className="text-ink-secondary">Otra entidad</div>
                       </div>
-                      <div className="p-2.5 rounded-lg bg-surface border border-border-subtle">
+                      <div className="p-2.5 rounded bg-surface border border-border-subtle">
                         <div className="sses-kpi-value text-lg text-status-amber">
                           {lastLinkResult.noEncontrados.length}
                         </div>

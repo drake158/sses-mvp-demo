@@ -298,7 +298,7 @@ export const EnteControlView: React.FC = () => {
                   {acomp.semanas.map((s) => (
                     <div
                       key={s.id}
-                      className="p-3 rounded-lg bg-elevated border border-border-subtle space-y-1.5"
+                      className="p-3 rounded bg-elevated border border-border-subtle space-y-1.5"
                     >
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-xs font-medium text-ink">

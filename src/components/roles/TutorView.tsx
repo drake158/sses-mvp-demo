@@ -279,13 +279,13 @@ export const TutorView: React.FC = () => {
               <div
                 role="group"
                 aria-label="Modalidad de acompañamiento"
-                className="grid grid-cols-2 gap-1 rounded-lg bg-elevated border border-border-subtle p-1"
+                className="grid grid-cols-2 gap-1 rounded bg-elevated border border-border-subtle p-1"
               >
                 <button
                   type="button"
                   aria-pressed={modalidad === 'INDIVIDUAL'}
                   onClick={() => setModalidad('INDIVIDUAL')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors duration-150 ${
+                  className={`px-3 py-1.5 rounded-sm text-xs font-medium transition-colors duration-150 ${
                     modalidad === 'INDIVIDUAL'
                       ? 'bg-brand-primary text-[var(--brand-primary-text)]'
                       : 'text-ink-secondary hover:text-ink'
@@ -297,7 +297,7 @@ export const TutorView: React.FC = () => {
                   type="button"
                   aria-pressed={modalidad === 'GRUPAL'}
                   onClick={() => setModalidad('GRUPAL')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors duration-150 ${
+                  className={`px-3 py-1.5 rounded-sm text-xs font-medium transition-colors duration-150 ${
                     modalidad === 'GRUPAL'
                       ? 'bg-brand-primary text-[var(--brand-primary-text)]'
                       : 'text-ink-secondary hover:text-ink'
@@ -317,7 +317,7 @@ export const TutorView: React.FC = () => {
                   {modalidad === 'INDIVIDUAL' ? '1 docente' : 'Mín. 2'}
                 </span>
               </div>
-              <div className="space-y-2 bg-elevated p-4 rounded-lg border border-border-subtle">
+              <div className="space-y-2 bg-elevated p-4 rounded border border-border-subtle">
                 {docentesEntidad.map((doc) => {
                   const checked = docenteIds.includes(doc.id);
                   return (
@@ -375,7 +375,7 @@ export const TutorView: React.FC = () => {
               type="submit"
               disabled={isSaving}
               title="Autogenera 4 semanas en estado PENDIENTE"
-              className={`w-full inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent disabled:opacity-50 ${
+              className={`w-full inline-flex items-center justify-center gap-2 rounded px-4 py-2 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent disabled:opacity-50 ${
                 state.isOffline
                   ? 'bg-[#D97706] hover:bg-[#B45309] text-white'
                   : 'sses-btn-primary'
@@ -468,7 +468,7 @@ export const TutorView: React.FC = () => {
                     return (
                       <div
                         key={sem.id}
-                        className="rounded-lg border border-border-subtle p-4 space-y-3 bg-elevated"
+                        className="rounded border border-border-subtle p-4 space-y-3 bg-elevated"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
@@ -514,7 +514,7 @@ export const TutorView: React.FC = () => {
                               handleMarkRealizado(acomp.id, sem.id)
                             }
                             aria-label={`Marcar semana ${sem.numeroSemana} como realizada`}
-                            className="flex-1 rounded-md border border-border-subtle bg-surface px-2.5 py-1.5 text-xs font-medium text-ink hover:border-status-emerald hover:text-status-emerald transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent"
+                            className="flex-1 rounded border border-border-subtle bg-surface px-2.5 py-1.5 text-xs font-medium text-ink hover:border-status-emerald hover:text-status-emerald transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent"
                           >
                             Realizado
                           </button>
@@ -531,7 +531,7 @@ export const TutorView: React.FC = () => {
                               }));
                             }}
                             aria-label={`Marcar semana ${sem.numeroSemana} como no realizada`}
-                            className="flex-1 rounded-md border border-border-subtle bg-surface px-2.5 py-1.5 text-xs font-medium text-ink-secondary hover:border-status-danger hover:text-status-danger transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent"
+                            className="flex-1 rounded border border-border-subtle bg-surface px-2.5 py-1.5 text-xs font-medium text-ink-secondary hover:border-status-danger hover:text-status-danger transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent"
                           >
                             No realizado
                           </button>
@@ -562,7 +562,7 @@ export const TutorView: React.FC = () => {
                                 onClick={() =>
                                   handleSaveNoRealizado(acomp.id, sem.id)
                                 }
-                                className="rounded-md bg-[#DC2626] px-3 py-1 text-xs font-medium text-white hover:bg-[#B91C1C] transition-colors"
+                                className="rounded bg-[#DC2626] px-3 py-1 text-xs font-medium text-white hover:bg-[#B91C1C] transition-colors"
                               >
                                 Guardar
                               </button>

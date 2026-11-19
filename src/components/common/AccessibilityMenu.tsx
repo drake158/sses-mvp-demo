@@ -83,7 +83,7 @@ export const AccessibilityMenu: React.FC<AccessibilityMenuProps> = ({
       ? `inline-flex items-center gap-1.5 rounded px-2 py-1 text-[13px] font-medium text-white transition-colors duration-150 hover:bg-gov-ribbon-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white ${
           open ? 'bg-gov-ribbon-hover' : ''
         }`
-      : `inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent ${
+      : `inline-flex items-center gap-1.5 rounded border px-2.5 py-1.5 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent ${
           open || hasActiveOverrides
             ? 'border-brand-accent bg-brand-soft text-brand-accent'
             : 'border-border-subtle bg-surface text-ink hover:bg-surface-hover'
@@ -163,7 +163,7 @@ export const AccessibilityMenu: React.FC<AccessibilityMenuProps> = ({
             <div
               role="group"
               aria-label="Escala de texto"
-              className="grid grid-cols-3 gap-1 rounded-lg border border-border-subtle bg-elevated p-1"
+              className="grid grid-cols-3 gap-1 rounded border border-border-subtle bg-elevated p-1"
             >
               {TEXT_SCALES.map((item) => {
                 const active = prefs.textScale === item.value;
@@ -175,7 +175,7 @@ export const AccessibilityMenu: React.FC<AccessibilityMenuProps> = ({
                     aria-pressed={active}
                     aria-label={item.ariaLabel}
                     title={item.title}
-                    className={`rounded-md py-1.5 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent ${
+                    className={`rounded-sm py-1.5 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent ${
                       active
                         ? 'bg-brand-primary text-[var(--brand-primary-text)]'
                         : 'text-ink-secondary hover:text-ink'

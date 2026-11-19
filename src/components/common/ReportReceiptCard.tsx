@@ -74,7 +74,7 @@ export const ReportReceiptCard: React.FC<ReportReceiptCardProps> = ({
         </div>
       </div>
 
-      <div className="rounded-lg border border-border-subtle bg-elevated px-4 py-3 space-y-1.5">
+      <div className="rounded border border-border-subtle bg-elevated px-4 py-3 space-y-1.5">
         <div className="flex items-center justify-between gap-2">
           <span className="text-xs font-medium text-ink-secondary">
             SHA-256
@@ -115,7 +115,7 @@ export const ReportReceiptCard: React.FC<ReportReceiptCardProps> = ({
             {constancias.slice(1).map((item) => (
               <div
                 key={item.id}
-                className="flex flex-wrap items-center justify-between gap-2 text-xs px-3 py-2 rounded-lg bg-elevated border border-border-subtle"
+                className="flex flex-wrap items-center justify-between gap-2 text-xs px-3 py-2 rounded bg-elevated border border-border-subtle"
               >
                 <span className="sses-mono text-ink">
                   {item.id} · {item.nombreArchivo}

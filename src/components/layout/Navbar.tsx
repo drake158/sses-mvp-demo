@@ -150,7 +150,7 @@ export const Navbar: React.FC = () => {
                   aria-haspopup="menu"
                   aria-expanded={roleMenuOpen}
                   aria-label="Cambiar rol activo"
-                  className="inline-flex items-center gap-2 rounded-lg border border-border-subtle bg-surface px-3 py-1.5 text-xs font-medium text-ink hover:bg-surface-hover hover:border-border-strong transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent"
+                  className="inline-flex items-center gap-2 rounded border border-border-subtle bg-surface px-3 py-1.5 text-xs font-medium text-ink hover:bg-surface-hover hover:border-border-strong transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent"
                 >
                   <ActiveRoleIcon
                     className="h-3.5 w-3.5 text-brand-accent shrink-0"
@@ -184,7 +184,7 @@ export const Navbar: React.FC = () => {
                             seleccionarRol(item.rol);
                             setRoleMenuOpen(false);
                           }}
-                          className={`w-full flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent ${
+                          className={`w-full flex items-center justify-between gap-2 rounded px-2.5 py-2 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent ${
                             isActive
                               ? 'bg-brand-soft text-brand-accent'
                               : 'text-ink hover:bg-surface-hover'
@@ -249,7 +249,7 @@ export const Navbar: React.FC = () => {
                 onClick={() => setShowResetModal(true)}
                 aria-label="Restaurar datos de fábrica"
                 title="Restaurar datos iniciales"
-                className="inline-flex items-center justify-center rounded-lg border border-border-subtle bg-surface p-1.5 text-ink-secondary hover:bg-surface-hover hover:text-ink hover:border-border-strong transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent"
+                className="inline-flex items-center justify-center rounded border border-border-subtle bg-surface p-1.5 text-ink-secondary hover:bg-surface-hover hover:text-ink hover:border-border-strong transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent"
               >
                 <RotateCcw className="h-3.5 w-3.5" strokeWidth={1.5} />
               </button>
@@ -328,7 +328,7 @@ export const Navbar: React.FC = () => {
                 type="button"
                 onClick={handleConfirmReset}
                 disabled={isResetting}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-[#DC2626] px-3.5 py-2 text-xs font-medium text-white hover:bg-[#B91C1C] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded bg-[#DC2626] px-3.5 py-2 text-xs font-medium text-white hover:bg-[#B91C1C] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent disabled:opacity-50"
               >
                 <RotateCcw className="h-3.5 w-3.5" strokeWidth={1.5} />
                 <span>{isResetting ? 'Restaurando...' : 'Restaurar'}</span>

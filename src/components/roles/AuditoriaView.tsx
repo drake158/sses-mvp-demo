@@ -279,7 +279,7 @@ export const AuditoriaView: React.FC = () => {
                       <div className="text-xs font-medium text-ink-secondary mb-1.5">
                         Anterior
                       </div>
-                      <pre className="sses-mono p-4 rounded-lg bg-surface border border-border-subtle text-[11px] text-ink-secondary overflow-x-auto max-h-56">
+                      <pre className="sses-mono p-4 rounded bg-surface border border-border-subtle text-[11px] text-ink-secondary overflow-x-auto max-h-56">
                         {JSON.stringify(entry.valoresAnteriores, null, 2)}
                       </pre>
                     </div>
@@ -287,14 +287,14 @@ export const AuditoriaView: React.FC = () => {
                       <div className="text-xs font-medium text-ink mb-1.5">
                         Nuevo
                       </div>
-                      <pre className="sses-mono p-4 rounded-lg bg-surface border border-border-subtle text-[11px] text-ink overflow-x-auto max-h-56">
+                      <pre className="sses-mono p-4 rounded bg-surface border border-border-subtle text-[11px] text-ink overflow-x-auto max-h-56">
                         {JSON.stringify(entry.valoresNuevos, null, 2)}
                       </pre>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[11px]">
-                    <div className="p-3 rounded-lg bg-surface border border-border-subtle">
+                    <div className="p-3 rounded bg-surface border border-border-subtle">
                       <div className="text-ink-secondary font-medium mb-1">
                         previousHash
                       </div>
@@ -302,7 +302,7 @@ export const AuditoriaView: React.FC = () => {
                         {entry.previousHash}
                       </div>
                     </div>
-                    <div className="p-3 rounded-lg bg-surface border border-border-subtle">
+                    <div className="p-3 rounded bg-surface border border-border-subtle">
                       <div className="text-ink-secondary font-medium mb-1">
                         hash
                       </div>

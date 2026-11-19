@@ -103,7 +103,7 @@ export const RoleSelector: React.FC = () => {
                 className="sses-card group p-6 text-left flex flex-col justify-between gap-6 transition-colors duration-150 hover:border-brand-accent hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
               >
                 <div className="flex items-start justify-between gap-4">
-                  <div className="h-10 w-10 rounded-lg border border-border-subtle bg-elevated text-brand-accent flex items-center justify-center transition-colors duration-150 group-hover:border-brand-border group-hover:bg-brand-soft">
+                  <div className="h-10 w-10 rounded border border-border-subtle bg-elevated text-brand-accent flex items-center justify-center transition-colors duration-150 group-hover:border-brand-border group-hover:bg-brand-soft">
                     <Icon className="h-5 w-5" strokeWidth={1.5} />
                   </div>
                   <ArrowUpRight

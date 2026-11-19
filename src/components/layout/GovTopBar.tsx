@@ -1,5 +1,6 @@
 import React from 'react';
 import { Moon, Sun } from 'lucide-react';
+import govLogo from '../../../gov.png';
 import { useAccessibility } from '../../context/AccessibilityContext';
 import { AccessibilityMenu } from '../common/AccessibilityMenu';
 
@@ -10,15 +11,13 @@ export const GovTopBar: React.FC = () => {
   return (
     <div className="h-9 bg-gov-ribbon text-white border-b border-white/10 transition-colors duration-150">
       <div className="max-w-6xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3">
-        {/* Left: GOV.CO · Ministerio de Educación Nacional */}
-        <div className="flex items-center gap-2 min-w-0 text-[13px] font-medium leading-none">
-          <span className="tracking-wide shrink-0">GOV.CO</span>
-          <span aria-hidden="true" className="text-white/50">
-            ·
-          </span>
-          <span className="truncate text-white/95">
-            Ministerio de Educación Nacional
-          </span>
+        {/* Left: Official GOV.CO Logo */}
+        <div className="flex items-center shrink-0">
+          <img
+            src={govLogo}
+            alt="GOV.CO"
+            className="h-6 w-auto object-contain select-none"
+          />
         </div>
 
         {/* Right: Theme Toggle + Accessibility Menu */}
