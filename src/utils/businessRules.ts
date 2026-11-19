@@ -468,20 +468,36 @@ const VALID_TIPOS_DOCUMENTO: ReadonlySet<string> = new Set<TipoDocumento>([
   'PPT',
 ]);
 
+const POSITIVE_INT_REGEX = /^[1-9]\d*$/;
+
 function limpiarNumeroDocumentoCatalogo(raw: string): string {
   return raw.trim().replace(/\s+/g, '');
 }
 
 /**
- * Validates manual student creation for Funcionario MEN:
+ * Validates that a grade input is strictly a positive integer (digits only, no ° symbol)
+ * and formats it directly with `°` for persistence (e.g., "10" -> "10°").
+ * Returns null if the value is empty or not strictly numeric.
+ */
+export function normalizarGradoNumerico(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!POSITIVE_INT_REGEX.test(trimmed)) {
+    return null;
+  }
+  return `${trimmed}°`;
+}
+
+/**
+ * Validates manual student creation/edition for Funcionario MEN:
  * - Valid document type (CC, TI, CE, PPT)
- * - Document number (>= 5 chars) not duplicated in catalog
- * - Full name (>= 3 chars), grade non-empty, active entity
+ * - Document number (>= 5 chars) not duplicated in catalog (excluding self when editing)
+ * - Full name (>= 3 chars), grade strictly numeric (formatted with ° on save), active entity
  */
 export function validarEstudianteInput(
   input: EstudianteInput,
   entidades: Entidad[],
-  estudiantesExistentes: Estudiante[]
+  estudiantesExistentes: Estudiante[],
+  excludeEstudianteId?: string
 ): ValidationResult {
   const errors: string[] = [];
 
@@ -494,7 +510,9 @@ export function validarEstudianteInput(
     errors.push('El número de documento debe tener al menos 5 caracteres.');
   } else if (
     estudiantesExistentes.some(
-      (e) => e.numeroDocumento.trim() === numeroLimpio
+      (e) =>
+        e.id !== excludeEstudianteId &&
+        e.numeroDocumento.trim() === numeroLimpio
     )
   ) {
     errors.push(`Ya existe un estudiante con el documento ${numeroLimpio}.`);
@@ -504,8 +522,10 @@ export function validarEstudianteInput(
     errors.push('El nombre completo debe tener al menos 3 caracteres.');
   }
 
-  if (!input.grado || input.grado.trim().length === 0) {
-    errors.push('Debe indicar el grado del estudiante.');
+  if (!normalizarGradoNumerico(input.grado)) {
+    errors.push(
+      'El grado debe ser únicamente un número entero positivo (sin el símbolo °).'
+    );
   }
 
   const entidad = entidades.find((e) => e.id === input.entidadId);
@@ -513,7 +533,7 @@ export function validarEstudianteInput(
     errors.push('Debe seleccionar una entidad educativa válida.');
   } else if (entidad.estado !== 'ACTIVA') {
     errors.push(
-      `La entidad "${entidad.nombre}" está INACTIVA y no permite nuevos estudiantes.`
+      `La entidad "${entidad.nombre}" está INACTIVA y no permite asociar estudiantes.`
     );
   }
 
@@ -528,6 +548,7 @@ export function validarEstudianteInput(
  * Supported formats per line:
  * - tipoDocumento, numeroDocumento, nombreCompleto, grado [, entidadId]
  * - numeroDocumento, nombreCompleto, grado  (defaults tipoDocumento to 'TI')
+ * Grade must be numeric and is formatted with `°` automatically.
  */
 export function procesarCargaMasivaEstudiantes(
   texto: string,
@@ -598,7 +619,7 @@ export function procesarCargaMasivaEstudiantes(
     const tipoDocumento = tipoDocRaw.toUpperCase() as TipoDocumento;
     const numeroDocumento = limpiarNumeroDocumentoCatalogo(numeroRaw);
     const nombreCompleto = nombreRaw.trim();
-    const grado = gradoRaw.trim();
+    const gradoFormateado = normalizarGradoNumerico(gradoRaw);
 
     if (!VALID_TIPOS_DOCUMENTO.has(tipoDocumento)) {
       invalidos.push({
@@ -627,11 +648,11 @@ export function procesarCargaMasivaEstudiantes(
       continue;
     }
 
-    if (!grado) {
+    if (!gradoFormateado) {
       invalidos.push({
         linea: i + 1,
         contenido: rawLine,
-        motivo: 'Falta indicar el grado.',
+        motivo: 'El grado debe ser únicamente un número entero positivo.',
       });
       continue;
     }
@@ -657,7 +678,7 @@ export function procesarCargaMasivaEstudiantes(
       numeroDocumento,
       nombreCompleto,
       entidadId: entidadIdRow,
-      grado,
+      grado: gradoFormateado,
     });
     nextNumericId += 1;
   }
@@ -666,14 +687,15 @@ export function procesarCargaMasivaEstudiantes(
 }
 
 /**
- * Validates manual tutor creation for Funcionario MEN:
+ * Validates manual tutor creation/edition for Funcionario MEN:
  * - Valid document type (CC, TI, CE, PPT)
- * - Document number (>= 5 chars) not duplicated in catalog
+ * - Document number (>= 5 chars) not duplicated in catalog (excluding self when editing)
  * - Full name (>= 3 chars) and assigned zone (>= 3 chars)
  */
 export function validarTutorInput(
   input: TutorInput,
-  tutoresExistentes: Tutor[]
+  tutoresExistentes: Tutor[],
+  excludeTutorId?: string
 ): ValidationResult {
   const errors: string[] = [];
 
@@ -685,7 +707,10 @@ export function validarTutorInput(
   if (!numeroLimpio || numeroLimpio.length < 5) {
     errors.push('El número de documento debe tener al menos 5 caracteres.');
   } else if (
-    tutoresExistentes.some((t) => t.numeroDocumento.trim() === numeroLimpio)
+    tutoresExistentes.some(
+      (t) =>
+        t.id !== excludeTutorId && t.numeroDocumento.trim() === numeroLimpio
+    )
   ) {
     errors.push(`Ya existe un tutor con el documento ${numeroLimpio}.`);
   }

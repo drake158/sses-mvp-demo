@@ -8,6 +8,7 @@ import type {
 import {
   aplicarEdicionEstrategia,
   enmascararDocumentoLey1581,
+  normalizarGradoNumerico,
   procesarCargaMasivaEstudiantes,
   puedeEditarEstrategia,
   validarEstudianteInput,
@@ -209,15 +210,15 @@ describe('SSES Reglas de Negocio Críticas (MEN Colombia)', () => {
     expect(enmascararDocumentoLey1581('CE', '12')).toBe('CE ******');
   });
 
-  it('4. Valida registro manual y carga masiva de estudiantes y tutores para Funcionario MEN', () => {
-    // Registro manual válido y rechazo por duplicado
+  it('4. Valida registro manual, edición y carga masiva de estudiantes y tutores para Funcionario MEN', () => {
+    // Registro manual válido (grado numérico puro) y rechazo por duplicado
     const okEst = validarEstudianteInput(
       {
         tipoDocumento: 'TI',
         numeroDocumento: '1020555111',
         nombreCompleto: 'Lucía Fernanda Pérez',
         entidadId: 'ENT-001',
-        grado: '10°',
+        grado: '10',
       },
       ENTIDADES_TEST,
       ESTUDIANTES_TEST
@@ -230,20 +231,36 @@ describe('SSES Reglas de Negocio Críticas (MEN Colombia)', () => {
         numeroDocumento: '1020304821',
         nombreCompleto: 'Duplicado Test',
         entidadId: 'ENT-001',
-        grado: '10°',
+        grado: '10',
       },
       ENTIDADES_TEST,
       ESTUDIANTES_TEST
     );
     expect(dupEst.valid).toBe(false);
 
-    // Carga masiva con encabezado CSV, registro válido, duplicado e inválido
+    // Edición permite conservar el propio documento al pasar excludeEstudianteId
+    const editSelfEst = validarEstudianteInput(
+      {
+        tipoDocumento: 'TI',
+        numeroDocumento: '1020304821',
+        nombreCompleto: 'Valentina Morales Editada',
+        entidadId: 'ENT-001',
+        grado: '11',
+      },
+      ENTIDADES_TEST,
+      ESTUDIANTES_TEST,
+      'EST-001'
+    );
+    expect(editSelfEst.valid).toBe(true);
+
+    // Carga masiva con encabezado CSV: formatea grado numérico con °, omite duplicado y rechaza inválidos
     const bulk = procesarCargaMasivaEstudiantes(
       [
         'tipoDocumento,numeroDocumento,nombreCompleto,grado',
-        'TI, 1020555222, Tomás Herrera Gil, 11°',
-        'TI, 1020304821, Ya Existe, 10°',
-        'XX, 123, Corto, 9°',
+        'TI, 1020555222, Tomás Herrera Gil, 11',
+        'TI, 1020304821, Ya Existe, 10',
+        'TI, 1020555333, Grado No Numérico, décimo',
+        'XX, 123, Corto, 9',
       ].join('\n'),
       'ENT-001',
       ENTIDADES_TEST,
@@ -251,10 +268,11 @@ describe('SSES Reglas de Negocio Críticas (MEN Colombia)', () => {
     );
     expect(bulk.creados).toHaveLength(1);
     expect(bulk.creados[0].numeroDocumento).toBe('1020555222');
+    expect(bulk.creados[0].grado).toBe('11°');
     expect(bulk.duplicados).toEqual(['1020304821']);
-    expect(bulk.invalidos).toHaveLength(1);
+    expect(bulk.invalidos).toHaveLength(2);
 
-    // Registro manual de tutor válido y duplicado
+    // Registro y edición manual de tutor
     const tutoresExistentes = [
       {
         id: 'TUT-001',
@@ -287,5 +305,49 @@ describe('SSES Reglas de Negocio Críticas (MEN Colombia)', () => {
         tutoresExistentes
       ).valid
     ).toBe(false);
+
+    expect(
+      validarTutorInput(
+        {
+          tipoDocumento: 'CC',
+          numeroDocumento: '80124589',
+          nombreCompleto: 'Alejandro Ramírez Editado',
+          zonaAsignada: 'Región Centro',
+        },
+        tutoresExistentes,
+        'TUT-001'
+      ).valid
+    ).toBe(true);
+  });
+
+  it('5. Exige que el campo Grado sea únicamente numérico y lo formatea automáticamente con ° al guardar', () => {
+    // Valores numéricos válidos -> formateados directamente con °
+    expect(normalizarGradoNumerico('9')).toBe('9°');
+    expect(normalizarGradoNumerico('10')).toBe('10°');
+    expect(normalizarGradoNumerico(' 11 ')).toBe('11°');
+
+    // Valores no numéricos o con símbolo ° manual deben rechazarse
+    expect(normalizarGradoNumerico('10°')).toBeNull();
+    expect(normalizarGradoNumerico('décimo')).toBeNull();
+    expect(normalizarGradoNumerico('10A')).toBeNull();
+    expect(normalizarGradoNumerico('0')).toBeNull();
+    expect(normalizarGradoNumerico('-5')).toBeNull();
+    expect(normalizarGradoNumerico('10.5')).toBeNull();
+    expect(normalizarGradoNumerico('')).toBeNull();
+
+    // Validación integrada en validarEstudianteInput
+    const invalidGrade = validarEstudianteInput(
+      {
+        tipoDocumento: 'TI',
+        numeroDocumento: '1020555999',
+        nombreCompleto: 'Prueba Grado Inválido',
+        entidadId: 'ENT-001',
+        grado: '10°',
+      },
+      ENTIDADES_TEST,
+      ESTUDIANTES_TEST
+    );
+    expect(invalidGrade.valid).toBe(false);
+    expect(invalidGrade.errors.join(' ')).toMatch(/número/i);
   });
 });

@@ -37,6 +37,7 @@ import type {
 import {
   aplicarEdicionEstrategia,
   generarCuatroSemanasPendientes,
+  normalizarGradoNumerico,
   procesarCargaMasivaEstudiantes,
   validarAcompanamientoInput,
   validarAvanceSemanal,
@@ -145,7 +146,21 @@ export interface SsesContextValue {
     entidadId: string,
     textoCsv: string
   ) => Promise<MutationResult<BulkCreateEstudiantesResult>>;
+  editarEstudiante: (
+    estudianteId: string,
+    input: EstudianteInput
+  ) => Promise<MutationResult<Estudiante>>;
+  eliminarEstudiante: (
+    estudianteId: string
+  ) => Promise<MutationResult<{ id: string }>>;
   crearTutor: (input: TutorInput) => Promise<MutationResult<Tutor>>;
+  editarTutor: (
+    tutorId: string,
+    input: TutorInput
+  ) => Promise<MutationResult<Tutor>>;
+  eliminarTutor: (
+    tutorId: string
+  ) => Promise<MutationResult<{ id: string }>>;
   registrarAcompanamiento: (
     input: AcompanamientoInput
   ) => Promise<MutationResult<Acompanamiento>>;
@@ -712,13 +727,20 @@ export const SsesProvider: React.FC<{ children: React.ReactNode }> = ({
             return match ? Math.max(max, Number.parseInt(match[1], 10)) : max;
           }, current.estudiantes.length) + 1;
 
+        const gradoFormateado = normalizarGradoNumerico(input.grado);
+        if (!gradoFormateado) {
+          throw new Error(
+            'El grado debe ser únicamente un número entero positivo (sin el símbolo °).'
+          );
+        }
+
         const nuevo: Estudiante = {
           id: `EST-${String(nextNum).padStart(3, '0')}`,
           tipoDocumento: input.tipoDocumento,
           numeroDocumento: input.numeroDocumento.trim().replace(/\s+/g, ''),
           nombreCompleto: input.nombreCompleto.trim(),
           entidadId: input.entidadId,
-          grado: input.grado.trim(),
+          grado: gradoFormateado,
         };
 
         return {
@@ -818,6 +840,192 @@ export const SsesProvider: React.FC<{ children: React.ReactNode }> = ({
     [commitMutation]
   );
 
+  const editarEstudiante = useCallback(
+    async (
+      estudianteId: string,
+      input: EstudianteInput
+    ): Promise<MutationResult<Estudiante>> => {
+      const existing = stateRef.current.estudiantes.find(
+        (e) => e.id === estudianteId
+      );
+      if (!existing) {
+        return { ok: false, error: 'Estudiante no encontrado.' };
+      }
+
+      const linkedStrategy = stateRef.current.estrategias.find((est) =>
+        est.estudianteIds.includes(estudianteId)
+      );
+      if (linkedStrategy && input.entidadId !== existing.entidadId) {
+        return {
+          ok: false,
+          error: `No se puede cambiar la entidad de un estudiante vinculado a ${linkedStrategy.id}.`,
+        };
+      }
+
+      const validation = validarEstudianteInput(
+        input,
+        stateRef.current.entidades,
+        stateRef.current.estudiantes,
+        estudianteId
+      );
+      if (!validation.valid) {
+        return {
+          ok: false,
+          error: validation.errors[0],
+          errors: validation.errors,
+        };
+      }
+
+      return commitMutation(async (current) => {
+        const target = current.estudiantes.find((e) => e.id === estudianteId);
+        if (!target) {
+          throw new Error('Estudiante no encontrado.');
+        }
+
+        const linked = current.estrategias.find((est) =>
+          est.estudianteIds.includes(estudianteId)
+        );
+        if (linked && input.entidadId !== target.entidadId) {
+          throw new Error(
+            `No se puede cambiar la entidad de un estudiante vinculado a ${linked.id}.`
+          );
+        }
+
+        const recheck = validarEstudianteInput(
+          input,
+          current.entidades,
+          current.estudiantes,
+          estudianteId
+        );
+        if (!recheck.valid) {
+          throw new Error(recheck.errors.join(' '));
+        }
+
+        const gradoFormateado = normalizarGradoNumerico(input.grado);
+        if (!gradoFormateado) {
+          throw new Error(
+            'El grado debe ser únicamente un número entero positivo (sin el símbolo °).'
+          );
+        }
+
+        const actualizado: Estudiante = {
+          ...target,
+          tipoDocumento: input.tipoDocumento,
+          numeroDocumento: input.numeroDocumento.trim().replace(/\s+/g, ''),
+          nombreCompleto: input.nombreCompleto.trim(),
+          entidadId: input.entidadId,
+          grado: gradoFormateado,
+        };
+
+        return {
+          nextState: {
+            ...current,
+            estudiantes: current.estudiantes.map((e) =>
+              e.id === estudianteId ? actualizado : e
+            ),
+          },
+          audit: {
+            rol: 'FUNCIONARIO_MEN',
+            accion: 'EDITAR_ESTUDIANTE',
+            entidadAfectada: 'Estudiante',
+            registroId: actualizado.id,
+            valoresAnteriores: {
+              tipoDocumento: target.tipoDocumento,
+              numeroDocumento: target.numeroDocumento,
+              nombreCompleto: target.nombreCompleto,
+              entidadId: target.entidadId,
+              grado: target.grado,
+            },
+            valoresNuevos: {
+              tipoDocumento: actualizado.tipoDocumento,
+              numeroDocumento: actualizado.numeroDocumento,
+              nombreCompleto: actualizado.nombreCompleto,
+              entidadId: actualizado.entidadId,
+              grado: actualizado.grado,
+            },
+          },
+          result: { ok: true as const, data: actualizado },
+        };
+      }).catch((err: unknown) => ({
+        ok: false as const,
+        error:
+          err instanceof Error
+            ? err.message
+            : 'No se pudo editar el estudiante.',
+      }));
+    },
+    [commitMutation]
+  );
+
+  const eliminarEstudiante = useCallback(
+    async (estudianteId: string): Promise<MutationResult<{ id: string }>> => {
+      const existing = stateRef.current.estudiantes.find(
+        (e) => e.id === estudianteId
+      );
+      if (!existing) {
+        return { ok: false, error: 'Estudiante no encontrado.' };
+      }
+
+      const linkedStrategy = stateRef.current.estrategias.find((est) =>
+        est.estudianteIds.includes(estudianteId)
+      );
+      if (linkedStrategy) {
+        return {
+          ok: false,
+          error: `No se puede eliminar: está vinculado a la estrategia ${linkedStrategy.id}.`,
+        };
+      }
+
+      return commitMutation(async (current) => {
+        const target = current.estudiantes.find((e) => e.id === estudianteId);
+        if (!target) {
+          throw new Error('Estudiante no encontrado.');
+        }
+
+        const linked = current.estrategias.find((est) =>
+          est.estudianteIds.includes(estudianteId)
+        );
+        if (linked) {
+          throw new Error(
+            `No se puede eliminar: está vinculado a la estrategia ${linked.id}.`
+          );
+        }
+
+        return {
+          nextState: {
+            ...current,
+            estudiantes: current.estudiantes.filter(
+              (e) => e.id !== estudianteId
+            ),
+          },
+          audit: {
+            rol: 'FUNCIONARIO_MEN',
+            accion: 'ELIMINAR_ESTUDIANTE',
+            entidadAfectada: 'Estudiante',
+            registroId: target.id,
+            valoresAnteriores: {
+              id: target.id,
+              tipoDocumento: target.tipoDocumento,
+              numeroDocumento: target.numeroDocumento,
+              nombreCompleto: target.nombreCompleto,
+              entidadId: target.entidadId,
+              grado: target.grado,
+            },
+            valoresNuevos: null,
+          },
+          result: { ok: true as const, data: { id: target.id } },
+        };
+      }).catch((err: unknown) => ({
+        ok: false as const,
+        error:
+          err instanceof Error
+            ? err.message
+            : 'No se pudo eliminar el estudiante.',
+      }));
+    },
+    [commitMutation]
+  );
+
   const crearTutor = useCallback(
     async (input: TutorInput): Promise<MutationResult<Tutor>> => {
       const validation = validarTutorInput(input, stateRef.current.tutores);
@@ -876,6 +1084,146 @@ export const SsesProvider: React.FC<{ children: React.ReactNode }> = ({
           err instanceof Error
             ? err.message
             : 'No se pudo registrar el tutor.',
+      }));
+    },
+    [commitMutation]
+  );
+
+  const editarTutor = useCallback(
+    async (
+      tutorId: string,
+      input: TutorInput
+    ): Promise<MutationResult<Tutor>> => {
+      const existing = stateRef.current.tutores.find((t) => t.id === tutorId);
+      if (!existing) {
+        return { ok: false, error: 'Tutor no encontrado.' };
+      }
+
+      const validation = validarTutorInput(
+        input,
+        stateRef.current.tutores,
+        tutorId
+      );
+      if (!validation.valid) {
+        return {
+          ok: false,
+          error: validation.errors[0],
+          errors: validation.errors,
+        };
+      }
+
+      return commitMutation(async (current) => {
+        const target = current.tutores.find((t) => t.id === tutorId);
+        if (!target) {
+          throw new Error('Tutor no encontrado.');
+        }
+
+        const recheck = validarTutorInput(input, current.tutores, tutorId);
+        if (!recheck.valid) {
+          throw new Error(recheck.errors.join(' '));
+        }
+
+        const actualizado: Tutor = {
+          ...target,
+          tipoDocumento: input.tipoDocumento,
+          numeroDocumento: input.numeroDocumento.trim().replace(/\s+/g, ''),
+          nombreCompleto: input.nombreCompleto.trim(),
+          zonaAsignada: input.zonaAsignada.trim(),
+        };
+
+        return {
+          nextState: {
+            ...current,
+            tutores: current.tutores.map((t) =>
+              t.id === tutorId ? actualizado : t
+            ),
+          },
+          audit: {
+            rol: 'FUNCIONARIO_MEN',
+            accion: 'EDITAR_TUTOR',
+            entidadAfectada: 'Tutor',
+            registroId: actualizado.id,
+            valoresAnteriores: {
+              tipoDocumento: target.tipoDocumento,
+              numeroDocumento: target.numeroDocumento,
+              nombreCompleto: target.nombreCompleto,
+              zonaAsignada: target.zonaAsignada,
+            },
+            valoresNuevos: {
+              tipoDocumento: actualizado.tipoDocumento,
+              numeroDocumento: actualizado.numeroDocumento,
+              nombreCompleto: actualizado.nombreCompleto,
+              zonaAsignada: actualizado.zonaAsignada,
+            },
+          },
+          result: { ok: true as const, data: actualizado },
+        };
+      }).catch((err: unknown) => ({
+        ok: false as const,
+        error:
+          err instanceof Error ? err.message : 'No se pudo editar el tutor.',
+      }));
+    },
+    [commitMutation]
+  );
+
+  const eliminarTutor = useCallback(
+    async (tutorId: string): Promise<MutationResult<{ id: string }>> => {
+      const existing = stateRef.current.tutores.find((t) => t.id === tutorId);
+      if (!existing) {
+        return { ok: false, error: 'Tutor no encontrado.' };
+      }
+
+      const assignedAcomp = stateRef.current.acompanamientos.find(
+        (a) => a.tutorId === tutorId
+      );
+      if (assignedAcomp) {
+        return {
+          ok: false,
+          error: `No se puede eliminar: tiene acompañamientos registrados (${assignedAcomp.id}).`,
+        };
+      }
+
+      return commitMutation(async (current) => {
+        const target = current.tutores.find((t) => t.id === tutorId);
+        if (!target) {
+          throw new Error('Tutor no encontrado.');
+        }
+
+        const assigned = current.acompanamientos.find(
+          (a) => a.tutorId === tutorId
+        );
+        if (assigned) {
+          throw new Error(
+            `No se puede eliminar: tiene acompañamientos registrados (${assigned.id}).`
+          );
+        }
+
+        return {
+          nextState: {
+            ...current,
+            tutores: current.tutores.filter((t) => t.id !== tutorId),
+          },
+          audit: {
+            rol: 'FUNCIONARIO_MEN',
+            accion: 'ELIMINAR_TUTOR',
+            entidadAfectada: 'Tutor',
+            registroId: target.id,
+            valoresAnteriores: {
+              id: target.id,
+              tipoDocumento: target.tipoDocumento,
+              numeroDocumento: target.numeroDocumento,
+              nombreCompleto: target.nombreCompleto,
+              zonaAsignada: target.zonaAsignada,
+            },
+            valoresNuevos: null,
+          },
+          result: { ok: true as const, data: { id: target.id } },
+        };
+      }).catch((err: unknown) => ({
+        ok: false as const,
+        error:
+          err instanceof Error ? err.message : 'No se pudo eliminar el tutor.',
       }));
     },
     [commitMutation]
@@ -1223,7 +1571,11 @@ export const SsesProvider: React.FC<{ children: React.ReactNode }> = ({
       vincularEstudiantes,
       crearEstudiante,
       crearEstudiantesMasivo,
+      editarEstudiante,
+      eliminarEstudiante,
       crearTutor,
+      editarTutor,
+      eliminarTutor,
       registrarAcompanamiento,
       actualizarAvanceSemanal,
       sincronizarColaOffline,
@@ -1246,7 +1598,11 @@ export const SsesProvider: React.FC<{ children: React.ReactNode }> = ({
       vincularEstudiantes,
       crearEstudiante,
       crearEstudiantesMasivo,
+      editarEstudiante,
+      eliminarEstudiante,
       crearTutor,
+      editarTutor,
+      eliminarTutor,
       registrarAcompanamiento,
       actualizarAvanceSemanal,
       sincronizarColaOffline,
