@@ -72,7 +72,6 @@ export const TutorView: React.FC = () => {
     );
   }, [selectedStrategy, state.docentes]);
 
-  // Reset selected teachers when strategy or modality changes
   useEffect(() => {
     if (docentesEntidad.length === 0) {
       setDocenteIds([]);
@@ -180,35 +179,33 @@ export const TutorView: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-        <span className="text-xs font-bold uppercase tracking-wider text-men-amber">
-          Perfil 2 · Tutor Territorial
-        </span>
-        <h1 className="text-2xl font-bold text-men-navy mt-0.5">
-          Acompañamientos Mensuales, Seguimiento Semanal y Operación Offline
+      <header className="gov-card p-6 space-y-1.5">
+        <span className="gov-pill-warning">Perfil 2 · Tutor Territorial</span>
+        <h1 className="text-2xl font-bold text-men-navy">
+          Acompañamientos Mensuales, Seguimiento Semanal y Modo Offline
         </h1>
-        <p className="text-sm text-slate-600 mt-1">
+        <p className="text-sm text-slate-600 max-w-3xl">
           Registre acompañamientos individuales o grupales (4 semanas PENDIENTE
-          autogeneradas), reporte el avance semanal y pruebe el interruptor{' '}
-          <strong>&quot;En línea / Sin conexión&quot;</strong> en la barra
-          superior.
+          autogeneradas), reporte el avance semanal y pruebe el control{' '}
+          <strong className="text-men-navy">En línea / Sin conexión</strong> en
+          la barra superior.
         </p>
-      </div>
+      </header>
 
-      {/* Offline Contextual Banner */}
+      {/* Offline Contextual Banner (4px Left Amber Bar) */}
       {state.isOffline && (
         <div
           role="status"
-          className="p-4 rounded-xl bg-amber-50 border-2 border-men-amber text-amber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+          className="gov-banner-warning flex flex-col sm:flex-row sm:items-center justify-between gap-4"
         >
           <div className="flex items-start gap-3">
-            <WifiOff className="w-5 h-5 text-men-amber shrink-0 mt-0.5" />
+            <WifiOff className="w-5 h-5 text-[#92400E] shrink-0 mt-0.5" />
             <div className="text-xs space-y-1">
-              <div className="font-bold text-sm text-men-amber">
+              <div className="font-heading font-bold text-sm text-[#92400E]">
                 Modo &quot;Sin conexión&quot; Activo — Cola Local con
                 Idempotency-Key
               </div>
-              <p>
+              <p className="leading-relaxed">
                 Los acompañamientos y avances semanales que guarde ahora se
                 almacenarán localmente con insignia{' '}
                 <strong>&quot;Pendiente de sincronización&quot;</strong>. Al
@@ -217,14 +214,14 @@ export const TutorView: React.FC = () => {
               </p>
             </div>
           </div>
-          <div className="shrink-0 px-3 py-1.5 rounded-lg bg-men-amber text-white text-xs font-bold">
+          <span className="gov-pill-warning gov-mono shrink-0 font-semibold">
             {state.offlineQueue.length} en cola local
-          </div>
+          </span>
         </div>
       )}
 
       {weekFeedback && (
-        <div className="p-3 rounded-lg bg-emerald-50 border border-men-emerald text-men-emerald text-xs flex items-center gap-2">
+        <div className="gov-banner-success text-xs flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 shrink-0" />
           <span>{weekFeedback}</span>
         </div>
@@ -232,19 +229,19 @@ export const TutorView: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left: Create Monthly Accompaniment Form */}
-        <section className="lg:col-span-5 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 bg-men-navy text-white flex items-center gap-2">
-            <PlusCircle className="w-4 h-4 text-sky-300" />
-            <h2 className="text-sm font-bold">
+        <section className="lg:col-span-5 gov-card overflow-hidden">
+          <div className="px-6 py-4 bg-[#F1F5F9] border-b border-[#E2E8F0] flex items-center gap-2.5">
+            <PlusCircle className="w-4 h-4 text-men-navy" />
+            <h2 className="text-sm font-bold text-men-navy">
               Registrar Acompañamiento Mensual
             </h2>
           </div>
 
-          <form onSubmit={handleSubmitAcompanamiento} className="p-5 space-y-4">
+          <form onSubmit={handleSubmitAcompanamiento} className="p-6 space-y-4">
             <div>
               <label
                 htmlFor="aco-estrategia"
-                className="block text-xs font-semibold text-slate-700 mb-1"
+                className="block text-xs font-semibold text-slate-700 mb-1.5"
               >
                 Estrategia asociada *
               </label>
@@ -252,7 +249,7 @@ export const TutorView: React.FC = () => {
                 id="aco-estrategia"
                 value={estrategiaId}
                 onChange={(e) => setEstrategiaId(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-men-blue focus:outline-none"
+                className="gov-input"
               >
                 {state.estrategias.map((est) => {
                   const ent = entidadesById.get(est.entidadId);
@@ -265,11 +262,11 @@ export const TutorView: React.FC = () => {
               </select>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label
                   htmlFor="aco-tutor"
-                  className="block text-xs font-semibold text-slate-700 mb-1"
+                  className="block text-xs font-semibold text-slate-700 mb-1.5"
                 >
                   Tutor *
                 </label>
@@ -277,7 +274,7 @@ export const TutorView: React.FC = () => {
                   id="aco-tutor"
                   value={tutorId}
                   onChange={(e) => setTutorId(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs bg-white focus:border-men-blue focus:outline-none"
+                  className="gov-input text-xs"
                 >
                   {state.tutores.map((t) => (
                     <option key={t.id} value={t.id}>
@@ -289,7 +286,7 @@ export const TutorView: React.FC = () => {
               <div>
                 <label
                   htmlFor="aco-mes"
-                  className="block text-xs font-semibold text-slate-700 mb-1"
+                  className="block text-xs font-semibold text-slate-700 mb-1.5"
                 >
                   Mes del acompañamiento *
                 </label>
@@ -299,7 +296,7 @@ export const TutorView: React.FC = () => {
                   required
                   value={mes}
                   onChange={(e) => setMes(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs focus:border-men-blue focus:outline-none"
+                  className="gov-input gov-mono text-xs"
                 />
               </div>
             </div>
@@ -308,14 +305,14 @@ export const TutorView: React.FC = () => {
               <span className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Modalidad *
               </span>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-1 p-1 rounded-lg bg-[#F1F5F9] border border-[#E2E8F0]">
                 <button
                   type="button"
                   onClick={() => setModalidad('INDIVIDUAL')}
-                  className={`px-3 py-2 rounded-lg text-xs font-semibold border transition-colors ${
+                  className={`px-3 py-2 rounded-md text-xs font-medium transition-all duration-150 ${
                     modalidad === 'INDIVIDUAL'
-                      ? 'bg-men-blue text-white border-men-blue'
-                      : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                      ? 'bg-men-navy text-white shadow-sm'
+                      : 'text-slate-600 hover:text-men-navy'
                   }`}
                 >
                   Individual (1 docente)
@@ -323,10 +320,10 @@ export const TutorView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setModalidad('GRUPAL')}
-                  className={`px-3 py-2 rounded-lg text-xs font-semibold border transition-colors ${
+                  className={`px-3 py-2 rounded-md text-xs font-medium transition-all duration-150 ${
                     modalidad === 'GRUPAL'
-                      ? 'bg-men-blue text-white border-men-blue'
-                      : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                      ? 'bg-men-navy text-white shadow-sm'
+                      : 'text-slate-600 hover:text-men-navy'
                   }`}
                 >
                   Grupal (&gt;= 2 docentes)
@@ -335,17 +332,17 @@ export const TutorView: React.FC = () => {
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center justify-between mb-1.5">
                 <span className="text-xs font-semibold text-slate-700">
                   Docentes de la entidad ({docenteIds.length} seleccionado(s)) *
                 </span>
-                <span className="text-[11px] text-slate-500">
+                <span className="text-[11px] text-[#64748B]">
                   {modalidad === 'INDIVIDUAL'
                     ? 'Exactamente 1'
                     : 'Mínimo 2 docentes'}
                 </span>
               </div>
-              <div className="space-y-1.5 bg-slate-50 p-3 rounded-lg border border-slate-200">
+              <div className="space-y-2 bg-[#F8FAFC] p-4 rounded-lg border border-[#E2E8F0]">
                 {docentesEntidad.map((doc) => {
                   const checked = docenteIds.includes(doc.id);
                   return (
@@ -358,12 +355,12 @@ export const TutorView: React.FC = () => {
                         name="docentes-seleccion"
                         checked={checked}
                         onChange={() => toggleDocente(doc.id)}
-                        className="accent-men-blue"
+                        className="accent-men-navy"
                       />
                       <span className="font-medium text-men-navy">
                         {doc.nombreCompleto}
                       </span>
-                      <span className="text-slate-500">· {doc.area}</span>
+                      <span className="text-[#64748B]">· {doc.area}</span>
                     </label>
                   );
                 })}
@@ -373,7 +370,7 @@ export const TutorView: React.FC = () => {
             <div>
               <label
                 htmlFor="aco-obs"
-                className="block text-xs font-semibold text-slate-700 mb-1"
+                className="block text-xs font-semibold text-slate-700 mb-1.5"
               >
                 Observaciones de planeación
               </label>
@@ -383,14 +380,14 @@ export const TutorView: React.FC = () => {
                 value={observaciones}
                 onChange={(e) => setObservaciones(e.target.value)}
                 placeholder="Objetivos pedagógicos del acompañamiento mensual..."
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs focus:border-men-blue focus:outline-none"
+                className="gov-input text-xs"
               />
             </div>
 
             {formError && (
               <div
                 role="alert"
-                className="p-3 rounded-lg bg-red-50 border border-men-red text-men-red text-xs flex items-start gap-2"
+                className="gov-banner-danger text-xs flex items-start gap-2"
               >
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>{formError}</span>
@@ -398,7 +395,7 @@ export const TutorView: React.FC = () => {
             )}
 
             {formSuccess && (
-              <div className="p-3 rounded-lg bg-emerald-50 border border-men-emerald text-men-emerald text-xs flex items-start gap-2">
+              <div className="gov-banner-success text-xs flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>{formSuccess}</span>
               </div>
@@ -407,10 +404,10 @@ export const TutorView: React.FC = () => {
             <button
               type="submit"
               disabled={isSaving}
-              className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-white font-semibold text-sm transition-colors disabled:opacity-60 ${
+              className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-150 ease-in-out disabled:opacity-60 ${
                 state.isOffline
-                  ? 'bg-men-amber hover:bg-amber-700'
-                  : 'bg-men-blue hover:bg-[#0052A3]'
+                  ? 'bg-[#92400E] hover:bg-amber-900 text-white'
+                  : 'gov-btn-primary'
               }`}
             >
               {state.isOffline ? (
@@ -430,10 +427,10 @@ export const TutorView: React.FC = () => {
         </section>
 
         {/* Right: Accompaniments List + Weekly Follow-up Controls */}
-        <section className="lg:col-span-7 space-y-4">
+        <section className="lg:col-span-7 space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-men-navy">
-              Acompañamientos Mensuales y Seguimiento Semanal (
+            <h2 className="text-lg font-bold text-men-navy">
+              Acompañamientos y Seguimiento Semanal (
               {state.acompanamientos.length})
             </h2>
           </div>
@@ -448,56 +445,58 @@ export const TutorView: React.FC = () => {
             return (
               <article
                 key={acomp.id}
-                className={`bg-white rounded-xl border shadow-sm overflow-hidden ${
-                  isPendingSync ? 'border-men-amber' : 'border-slate-200'
+                className={`gov-card overflow-hidden ${
+                  isPendingSync ? 'border-l-4 border-l-[#D97706]' : ''
                 }`}
               >
-                <div className="px-5 py-4 bg-slate-50 border-b border-slate-200 flex flex-wrap items-start justify-between gap-3">
-                  <div>
+                <div className="px-6 py-4 bg-[#F8FAFC] border-b border-[#E2E8F0] flex flex-wrap items-start justify-between gap-4">
+                  <div className="space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-xs font-mono font-bold text-men-navy">
+                      <span className="gov-mono text-xs font-semibold text-men-accent">
                         {acomp.id}
                       </span>
-                      <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-50 text-men-blue border border-blue-200">
-                        {acomp.modalidad}
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-xs text-slate-600">
+                      <span className="gov-pill-info">{acomp.modalidad}</span>
+                      <span className="inline-flex items-center gap-1 gov-mono text-xs text-[#64748B]">
                         <Calendar className="w-3.5 h-3.5" />
                         {acomp.mes}
                       </span>
                     </div>
-                    <h3 className="text-sm font-bold text-men-navy mt-1">
+                    <h3 className="text-base font-bold text-men-navy">
                       {est?.nombre ?? acomp.estrategiaId}
                     </h3>
-                    <p className="text-xs text-slate-600 mt-0.5">
+                    <p className="text-xs text-[#64748B]">
                       {ent?.nombre} · Tutor:{' '}
-                      <strong>{tutor?.nombreCompleto ?? acomp.tutorId}</strong>
+                      <strong className="text-slate-800">
+                        {tutor?.nombreCompleto ?? acomp.tutorId}
+                      </strong>
                     </p>
-                    <div className="mt-1 flex items-center gap-1.5 text-xs text-slate-600">
-                      <Users className="w-3.5 h-3.5 text-slate-400" />
+                    <div className="flex items-center gap-1.5 text-xs text-[#64748B]">
+                      <Users className="w-3.5 h-3.5 shrink-0" />
                       <span>
                         Docentes:{' '}
                         {acomp.docenteIds
-                          .map((id) => docentesById.get(id)?.nombreCompleto ?? id)
+                          .map(
+                            (id) => docentesById.get(id)?.nombreCompleto ?? id
+                          )
                           .join(', ')}
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-end gap-1 shrink-0">
+                  <div className="flex flex-col items-end gap-1.5 shrink-0">
                     {isPendingSync ? (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 border border-men-amber text-men-amber text-xs font-bold">
+                      <span className="gov-pill-warning">
                         <CloudOff className="w-3.5 h-3.5" />
                         <span>Pendiente de sincronización</span>
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-men-emerald text-xs font-semibold">
+                      <span className="gov-pill-success">
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         <span>Sincronizado</span>
                       </span>
                     )}
                     <code
-                      className="text-[10px] font-mono text-slate-400"
+                      className="gov-mono text-[11px] text-[#64748B]"
                       title={acomp.idempotencyKey}
                     >
                       Key: {acomp.idempotencyKey.slice(0, 20)}
@@ -506,7 +505,7 @@ export const TutorView: React.FC = () => {
                 </div>
 
                 {/* 4 Weeks Grid */}
-                <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {acomp.semanas.map((sem) => {
                     const isEditingNoRealizado =
                       activeNoRealizadoKey === sem.id;
@@ -517,39 +516,39 @@ export const TutorView: React.FC = () => {
                     return (
                       <div
                         key={sem.id}
-                        className="rounded-lg border border-slate-200 p-3 space-y-2.5 bg-slate-50/40"
+                        className="rounded-xl border border-[#E2E8F0] p-4 space-y-3 bg-white"
                       >
-                        <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-start justify-between gap-2">
                           <div>
-                            <div className="text-xs font-bold text-men-navy">
+                            <div className="font-heading text-sm font-bold text-men-navy">
                               Semana {sem.numeroSemana}
                             </div>
-                            <div className="text-[11px] text-slate-500">
-                              Programada: {sem.fechaProgramada}
+                            <div className="gov-mono text-[11px] text-[#64748B] mt-0.5">
+                              {sem.fechaProgramada}
                             </div>
                           </div>
 
                           <div className="flex flex-col items-end gap-1">
                             {sem.estado === 'REALIZADO' && (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-men-emerald border border-emerald-200">
+                              <span className="gov-pill-success">
                                 <CheckCircle2 className="w-3 h-3" />
                                 REALIZADO
                               </span>
                             )}
                             {sem.estado === 'PENDIENTE' && (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-men-amber border border-amber-200">
+                              <span className="gov-pill-warning">
                                 <Clock className="w-3 h-3" />
                                 PENDIENTE
                               </span>
                             )}
                             {sem.estado === 'NO_REALIZADO' && (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-red-50 text-men-red border border-red-200">
+                              <span className="gov-pill-danger">
                                 <XCircle className="w-3 h-3" />
                                 NO REALIZADO
                               </span>
                             )}
                             {semPendingSync && (
-                              <span className="text-[10px] font-bold text-men-amber">
+                              <span className="text-[10px] font-semibold text-[#92400E]">
                                 Pendiente de sincronización
                               </span>
                             )}
@@ -558,9 +557,8 @@ export const TutorView: React.FC = () => {
 
                         {sem.estado === 'NO_REALIZADO' &&
                           sem.motivoNoRealizado && (
-                            <div className="text-[11px] bg-red-50/70 border border-red-100 rounded p-2 text-slate-700">
-                              <strong className="text-men-red">Motivo:</strong>{' '}
-                              {sem.motivoNoRealizado}
+                            <div className="gov-banner-danger py-2 px-3 text-[11px]">
+                              <strong>Motivo:</strong> {sem.motivoNoRealizado}
                             </div>
                           )}
 
@@ -571,7 +569,7 @@ export const TutorView: React.FC = () => {
                             onClick={() =>
                               handleMarkRealizado(acomp.id, sem.id)
                             }
-                            className="flex-1 px-2.5 py-1.5 rounded-md text-[11px] font-semibold bg-men-emerald hover:bg-emerald-700 text-white transition-colors"
+                            className="flex-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-[#ECFDF5] border border-[#A7F3D0] text-[#065F46] hover:bg-emerald-100 transition-colors duration-150"
                           >
                             Marcar REALIZADO
                           </button>
@@ -587,14 +585,14 @@ export const TutorView: React.FC = () => {
                                 [sem.id]: '',
                               }));
                             }}
-                            className="flex-1 px-2.5 py-1.5 rounded-md text-[11px] font-semibold bg-white border border-men-red text-men-red hover:bg-red-50 transition-colors"
+                            className="flex-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-[#FEF2F2] border border-[#FECACA] text-[#991B1B] hover:bg-red-100 transition-colors duration-150"
                           >
                             NO_REALIZADO
                           </button>
                         </div>
 
                         {isEditingNoRealizado && (
-                          <div className="pt-2 border-t border-slate-200 space-y-2">
+                          <div className="pt-3 border-t border-[#E2E8F0] space-y-2.5">
                             <label className="block text-[11px] font-semibold text-slate-700">
                               Motivo obligatorio (mínimo 10 caracteres útiles):
                             </label>
@@ -603,15 +601,15 @@ export const TutorView: React.FC = () => {
                               value={motivoDraft}
                               onChange={(e) => setMotivoDraft(e.target.value)}
                               placeholder="Explique la causa de no realización..."
-                              className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-xs focus:border-men-blue focus:outline-none"
+                              className="gov-input text-xs"
                             />
                             <div className="flex items-center justify-between text-[11px]">
                               <span
-                                className={
+                                className={`gov-mono font-medium ${
                                   trimmedLen >= 10
-                                    ? 'text-men-emerald font-semibold'
-                                    : 'text-men-amber font-semibold'
-                                }
+                                    ? 'text-[#065F46]'
+                                    : 'text-[#92400E]'
+                                }`}
                               >
                                 {trimmedLen} / 10 caracteres útiles
                               </span>
@@ -620,7 +618,7 @@ export const TutorView: React.FC = () => {
                                 onClick={() =>
                                   handleSaveNoRealizado(acomp.id, sem.id)
                                 }
-                                className="px-3 py-1 rounded-md bg-men-red hover:bg-red-700 text-white font-semibold"
+                                className="px-3 py-1.5 rounded-lg bg-[#991B1B] hover:bg-red-900 text-white font-semibold transition-colors duration-150"
                               >
                                 Guardar motivo
                               </button>
@@ -631,7 +629,7 @@ export const TutorView: React.FC = () => {
                         {weekError[sem.id] && (
                           <div
                             role="alert"
-                            className="text-[11px] text-men-red bg-red-50 border border-red-200 rounded p-2"
+                            className="gov-banner-danger py-2 px-3 text-[11px]"
                           >
                             {weekError[sem.id]}
                           </div>

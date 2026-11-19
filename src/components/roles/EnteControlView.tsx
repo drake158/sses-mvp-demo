@@ -50,30 +50,33 @@ export const EnteControlView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-7">
-      {/* Read-Only & Ley 1581 Compliance Banner */}
-      <div className="bg-emerald-50 border-2 border-men-emerald rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <ShieldCheck className="w-6 h-6 text-men-emerald shrink-0 mt-0.5" />
-          <div>
+    <div className="space-y-6">
+      {/* Read-Only & Ley 1581 Compliance Banner (4px Left Emerald Bar) */}
+      <header className="gov-card border-l-4 border-l-[#065F46] p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-start gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-[#ECFDF5] border border-[#A7F3D0] text-[#065F46] flex items-center justify-center shrink-0 mt-0.5">
+            <ShieldCheck className="w-5 h-5" />
+          </div>
+          <div className="space-y-1.5">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-men-emerald">
+              <span className="gov-pill-success">
+                <Eye className="w-3 h-3" />
+                <span>Solo Lectura · Ley 1581 de 2012</span>
+              </span>
+              <span className="text-xs font-medium text-[#64748B]">
                 Perfil 3 · Ente de Control
               </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-men-emerald text-white text-[11px] font-bold">
-                <Eye className="w-3 h-3" />
-                <span>SOLO LECTURA · LEY 1581 DE 2012</span>
-              </span>
             </div>
-            <h1 className="text-xl font-bold text-men-navy mt-1">
+            <h1 className="text-2xl font-bold text-men-navy">
               Supervisión Institucional y Protección de Datos Personales
             </h1>
-            <p className="text-xs sm:text-sm text-slate-700 mt-1">
+            <p className="text-sm text-slate-600 max-w-3xl">
               Esta vista opera estrictamente en modo de{' '}
-              <strong>solo lectura</strong> sin controles de modificación. Todos
-              los números de documento visibles en pantalla y en los reportes de
-              ley CSV se enmascaran automáticamente mostrando únicamente los
-              últimos 4 dígitos (ej. <code>CC ******4821</code>).
+              <strong className="text-men-navy">solo lectura</strong> sin
+              controles de modificación. Todos los números de documento visibles
+              en pantalla y en los reportes de ley CSV se enmascaran
+              automáticamente conservando solo los últimos 4 dígitos (ej.{' '}
+              <code className="gov-mono text-[#065F46]">CC ******4821</code>).
             </p>
           </div>
         </div>
@@ -82,7 +85,7 @@ export const EnteControlView: React.FC = () => {
           type="button"
           onClick={handleDownloadStatutoryCsv}
           disabled={isExporting}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-men-emerald hover:bg-emerald-700 text-white text-sm font-semibold shadow-sm transition-colors shrink-0 disabled:opacity-60"
+          className="gov-btn-primary shrink-0"
         >
           <Download className="w-4 h-4" />
           <span>
@@ -91,7 +94,7 @@ export const EnteControlView: React.FC = () => {
               : 'Descargar Reporte de Ley CSV (SHA-256)'}
           </span>
         </button>
-      </div>
+      </header>
 
       {/* Read-Only KPIs & Alerts */}
       <KpiDashboard
@@ -105,55 +108,53 @@ export const EnteControlView: React.FC = () => {
         emptyMessage="Descargue el Reporte de Ley CSV para generar la constancia criptográfica SHA-256 con documentos enmascarados bajo Ley 1581."
       />
 
-      {/* Read-only Strategies Summary */}
-      <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-5 py-3.5 bg-men-navy text-white flex items-center justify-between">
-          <h2 className="text-sm font-bold">
+      {/* Read-only Strategies Summary Table */}
+      <section className="gov-card overflow-hidden">
+        <div className="px-6 py-4 bg-white border-b border-[#E2E8F0] flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-base font-bold text-men-navy">
             Estrategias Estudiantiles Registradas ({state.estrategias.length})
           </h2>
-          <span className="text-[11px] text-sky-200">Consulta sin edición</span>
+          <span className="gov-pill-neutral">Consulta sin edición</span>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 text-xs">
-            <thead className="bg-slate-50 text-slate-600 uppercase tracking-wider text-[11px]">
+          <table className="gov-table">
+            <thead>
               <tr>
-                <th className="px-4 py-3 text-left font-bold">ID</th>
-                <th className="px-4 py-3 text-left font-bold">Estrategia</th>
-                <th className="px-4 py-3 text-left font-bold">Entidad Educativa</th>
-                <th className="px-4 py-3 text-left font-bold">Vigencia</th>
-                <th className="px-4 py-3 text-left font-bold">Estado</th>
-                <th className="px-4 py-3 text-right font-bold">Estudiantes</th>
+                <th>ID</th>
+                <th>Estrategia</th>
+                <th>Entidad Educativa</th>
+                <th>Vigencia</th>
+                <th>Estado</th>
+                <th className="!text-right">Estudiantes</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {state.estrategias.map((est) => {
                 const ent = entidadesById.get(est.entidadId);
                 return (
-                  <tr key={est.id} className="hover:bg-slate-50/60">
-                    <td className="px-4 py-3 font-mono font-bold text-men-navy">
+                  <tr key={est.id}>
+                    <td className="gov-mono text-xs font-semibold text-men-accent">
                       {est.id}
                     </td>
-                    <td className="px-4 py-3 font-semibold text-slate-800">
-                      {est.nombre}
-                    </td>
-                    <td className="px-4 py-3 text-slate-600">
+                    <td className="font-medium text-men-navy">{est.nombre}</td>
+                    <td className="text-slate-600">
                       {ent?.nombre ?? est.entidadId} ({ent?.municipio})
                     </td>
-                    <td className="px-4 py-3 font-mono text-slate-600">
+                    <td className="gov-mono text-xs text-[#64748B]">
                       {est.fechaInicio} → {est.fechaFin}
                     </td>
-                    <td className="px-4 py-3">
+                    <td>
                       <span
-                        className={`px-2 py-0.5 rounded-full font-bold text-[11px] ${
+                        className={
                           est.estado === 'CON_ESTUDIANTES'
-                            ? 'bg-emerald-50 text-men-emerald border border-emerald-200'
-                            : 'bg-blue-50 text-men-blue border border-blue-200'
-                        }`}
+                            ? 'gov-pill-danger'
+                            : 'gov-pill-info'
+                        }
                       >
                         {est.estado}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right font-bold text-men-navy">
+                    <td className="text-right gov-mono font-semibold text-men-navy">
                       {est.estudianteIds.length}
                     </td>
                   </tr>
@@ -165,43 +166,41 @@ export const EnteControlView: React.FC = () => {
       </section>
 
       {/* Masked Students Table (Ley 1581) */}
-      <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-          <h2 className="text-sm font-bold text-men-navy">
+      <section className="gov-card overflow-hidden">
+        <div className="px-6 py-4 bg-white border-b border-[#E2E8F0] flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-base font-bold text-men-navy">
             Directorio de Estudiantes — Documentos Enmascarados (Ley 1581)
           </h2>
-          <span className="text-[11px] font-semibold text-men-emerald">
-            PII Protegida ({state.estudiantes.length} registros)
+          <span className="gov-pill-success gov-mono">
+            PII Protegida · {state.estudiantes.length} registros
           </span>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 text-xs">
-            <thead className="bg-slate-50 text-slate-600 uppercase tracking-wider text-[11px]">
+          <table className="gov-table">
+            <thead>
               <tr>
-                <th className="px-4 py-3 text-left font-bold">
-                  Documento (Ley 1581)
-                </th>
-                <th className="px-4 py-3 text-left font-bold">
-                  Nombre Completo
-                </th>
-                <th className="px-4 py-3 text-left font-bold">Grado</th>
-                <th className="px-4 py-3 text-left font-bold">Entidad</th>
+                <th>Documento (Ley 1581)</th>
+                <th>Nombre Completo</th>
+                <th>Grado</th>
+                <th>Entidad Educativa</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {state.estudiantes.map((est) => (
-                <tr key={est.id} className="hover:bg-slate-50/60">
-                  <td className="px-4 py-2.5 font-mono font-bold text-men-emerald">
+                <tr key={est.id}>
+                  <td className="gov-mono text-xs font-semibold text-[#065F46]">
                     {enmascararDocumentoLey1581(
                       est.tipoDocumento,
                       est.numeroDocumento
                     )}
                   </td>
-                  <td className="px-4 py-2.5 font-medium text-slate-800">
+                  <td className="font-medium text-slate-800">
                     {est.nombreCompleto}
                   </td>
-                  <td className="px-4 py-2.5 text-slate-600">{est.grado}</td>
-                  <td className="px-4 py-2.5 text-slate-600">
+                  <td className="gov-mono text-xs text-[#64748B]">
+                    {est.grado}
+                  </td>
+                  <td className="text-slate-600">
                     {entidadesById.get(est.entidadId)?.nombre ?? est.entidadId}
                   </td>
                 </tr>
@@ -213,34 +212,34 @@ export const EnteControlView: React.FC = () => {
 
       {/* Masked Teachers & Tutors Tables (Ley 1581) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200">
-            <h2 className="text-sm font-bold text-men-navy">
+        <section className="gov-card overflow-hidden">
+          <div className="px-6 py-4 bg-white border-b border-[#E2E8F0]">
+            <h2 className="text-base font-bold text-men-navy">
               Docentes ({state.docentes.length}) · Enmascaramiento Ley 1581
             </h2>
           </div>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-200 text-xs">
-              <thead className="bg-slate-50 text-slate-600 text-[11px] uppercase">
+            <table className="gov-table">
+              <thead>
                 <tr>
-                  <th className="px-4 py-2.5 text-left font-bold">Documento</th>
-                  <th className="px-4 py-2.5 text-left font-bold">Nombre</th>
-                  <th className="px-4 py-2.5 text-left font-bold">Área</th>
+                  <th>Documento</th>
+                  <th>Nombre</th>
+                  <th>Área</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody>
                 {state.docentes.map((doc) => (
                   <tr key={doc.id}>
-                    <td className="px-4 py-2.5 font-mono font-bold text-men-emerald">
+                    <td className="gov-mono text-xs font-semibold text-[#065F46]">
                       {enmascararDocumentoLey1581(
                         doc.tipoDocumento,
                         doc.numeroDocumento
                       )}
                     </td>
-                    <td className="px-4 py-2.5 text-slate-800">
+                    <td className="font-medium text-slate-800">
                       {doc.nombreCompleto}
                     </td>
-                    <td className="px-4 py-2.5 text-slate-600">{doc.area}</td>
+                    <td className="text-slate-600">{doc.area}</td>
                   </tr>
                 ))}
               </tbody>
@@ -248,36 +247,34 @@ export const EnteControlView: React.FC = () => {
           </div>
         </section>
 
-        <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200">
-            <h2 className="text-sm font-bold text-men-navy">
+        <section className="gov-card overflow-hidden">
+          <div className="px-6 py-4 bg-white border-b border-[#E2E8F0]">
+            <h2 className="text-base font-bold text-men-navy">
               Tutores ({state.tutores.length}) · Enmascaramiento Ley 1581
             </h2>
           </div>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-200 text-xs">
-              <thead className="bg-slate-50 text-slate-600 text-[11px] uppercase">
+            <table className="gov-table">
+              <thead>
                 <tr>
-                  <th className="px-4 py-2.5 text-left font-bold">Documento</th>
-                  <th className="px-4 py-2.5 text-left font-bold">Nombre</th>
-                  <th className="px-4 py-2.5 text-left font-bold">Zona</th>
+                  <th>Documento</th>
+                  <th>Nombre</th>
+                  <th>Zona Asignada</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody>
                 {state.tutores.map((tut) => (
                   <tr key={tut.id}>
-                    <td className="px-4 py-2.5 font-mono font-bold text-men-emerald">
+                    <td className="gov-mono text-xs font-semibold text-[#065F46]">
                       {enmascararDocumentoLey1581(
                         tut.tipoDocumento,
                         tut.numeroDocumento
                       )}
                     </td>
-                    <td className="px-4 py-2.5 text-slate-800">
+                    <td className="font-medium text-slate-800">
                       {tut.nombreCompleto}
                     </td>
-                    <td className="px-4 py-2.5 text-slate-600">
-                      {tut.zonaAsignada}
-                    </td>
+                    <td className="text-slate-600">{tut.zonaAsignada}</td>
                   </tr>
                 ))}
               </tbody>
@@ -287,62 +284,67 @@ export const EnteControlView: React.FC = () => {
       </div>
 
       {/* Read-only Follow-ups Summary */}
-      <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200">
-          <h2 className="text-sm font-bold text-men-navy">
+      <section className="gov-card overflow-hidden">
+        <div className="px-6 py-4 bg-white border-b border-[#E2E8F0]">
+          <h2 className="text-base font-bold text-men-navy">
             Detalle de Acompañamientos y Seguimientos Semanales (Solo Lectura)
           </h2>
         </div>
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-[#E2E8F0]">
           {state.acompanamientos.map((acomp) => {
             const est = estrategiasById.get(acomp.estrategiaId);
             const tut = tutoresById.get(acomp.tutorId);
             return (
-              <div key={acomp.id} className="p-4 space-y-2 text-xs">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <span className="font-mono font-bold text-men-navy">
+              <div key={acomp.id} className="p-6 space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="gov-mono font-semibold text-men-accent">
                       {acomp.id}
-                    </span>{' '}
-                    ·{' '}
-                    <span className="font-semibold text-slate-800">
+                    </span>
+                    <span className="font-semibold text-men-navy text-sm">
                       {est?.nombre ?? acomp.estrategiaId}
-                    </span>{' '}
-                    · <span className="text-slate-500">Mes {acomp.mes}</span>
+                    </span>
+                    <span className="gov-mono text-[#64748B]">
+                      · Mes {acomp.mes}
+                    </span>
                   </div>
-                  <div className="text-slate-600">
+                  <div className="text-[#64748B]">
                     Tutor: {tut?.nombreCompleto} (
-                    {tut
-                      ? enmascararDocumentoLey1581(
-                          tut.tipoDocumento,
-                          tut.numeroDocumento
-                        )
-                      : ''}
+                    <span className="gov-mono text-[#065F46]">
+                      {tut
+                        ? enmascararDocumentoLey1581(
+                            tut.tipoDocumento,
+                            tut.numeroDocumento
+                          )
+                        : ''}
+                    </span>
                     ) · {acomp.modalidad}
                   </div>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {acomp.semanas.map((s) => (
                     <div
                       key={s.id}
-                      className="p-2 rounded-lg bg-slate-50 border border-slate-200"
+                      className="p-3 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] space-y-1.5"
                     >
-                      <div className="font-bold text-men-navy">
-                        Semana {s.numeroSemana}
-                      </div>
-                      <div
-                        className={`text-[11px] font-bold mt-0.5 ${
-                          s.estado === 'REALIZADO'
-                            ? 'text-men-emerald'
-                            : s.estado === 'NO_REALIZADO'
-                            ? 'text-men-red'
-                            : 'text-men-amber'
-                        }`}
-                      >
-                        {s.estado}
+                      <div className="flex items-center justify-between">
+                        <span className="font-heading text-xs font-bold text-men-navy">
+                          Semana {s.numeroSemana}
+                        </span>
+                        <span
+                          className={
+                            s.estado === 'REALIZADO'
+                              ? 'gov-pill-success'
+                              : s.estado === 'NO_REALIZADO'
+                              ? 'gov-pill-danger'
+                              : 'gov-pill-warning'
+                          }
+                        >
+                          {s.estado}
+                        </span>
                       </div>
                       {s.motivoNoRealizado && (
-                        <p className="text-[10px] text-slate-600 mt-1">
+                        <p className="text-[11px] text-slate-600 leading-snug">
                           {s.motivoNoRealizado}
                         </p>
                       )}

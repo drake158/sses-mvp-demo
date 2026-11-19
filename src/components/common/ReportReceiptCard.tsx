@@ -30,8 +30,10 @@ export const ReportReceiptCard: React.FC<ReportReceiptCardProps> = ({
 
   if (constancias.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-dashed border-slate-300 p-5 text-sm text-slate-500 flex items-center gap-3">
-        <FileSpreadsheet className="w-5 h-5 text-slate-400 shrink-0" />
+      <div className="gov-card p-6 border-dashed text-sm text-[#64748B] flex items-center gap-3">
+        <div className="w-9 h-9 rounded-lg bg-[#F1F5F9] text-[#64748B] flex items-center justify-center shrink-0">
+          <FileSpreadsheet className="w-4 h-4" />
+        </div>
         <span>{emptyMessage}</span>
       </div>
     );
@@ -40,18 +42,16 @@ export const ReportReceiptCard: React.FC<ReportReceiptCardProps> = ({
   const latest = constancias[0];
 
   return (
-    <div className="bg-white rounded-xl border border-emerald-200 shadow-sm overflow-hidden">
-      <div className="px-4 py-3 bg-emerald-50 border-b border-emerald-200 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-men-emerald font-bold text-sm">
-          <ShieldCheck className="w-4 h-4" />
+    <div className="gov-card border-l-4 border-l-[#065F46] overflow-hidden">
+      <div className="px-6 py-4 bg-[#ECFDF5]/60 border-b border-[#E2E8F0] flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-[#065F46] font-heading font-bold text-sm">
+          <ShieldCheck className="w-4 h-4 shrink-0" />
           <span>Constancia Criptográfica de Reporte CSV ({latest.id})</span>
         </div>
         <span
-          className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${
-            latest.enmascaradoLey1581
-              ? 'bg-men-emerald text-white'
-              : 'bg-men-navy text-white'
-          }`}
+          className={
+            latest.enmascaradoLey1581 ? 'gov-pill-success' : 'gov-pill-neutral'
+          }
         >
           {latest.enmascaradoLey1581
             ? 'Ley 1581 · Documentos Enmascarados'
@@ -59,42 +59,48 @@ export const ReportReceiptCard: React.FC<ReportReceiptCardProps> = ({
         </span>
       </div>
 
-      <div className="p-4 space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+      <div className="p-6 space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
           <div>
-            <div className="text-slate-500 font-medium">Archivo CSV</div>
-            <div className="font-semibold text-men-navy break-all">
+            <div className="text-[#64748B] font-medium uppercase tracking-[0.04em] text-[11px]">
+              Archivo CSV
+            </div>
+            <div className="gov-mono font-medium text-men-navy break-all mt-0.5">
               {latest.nombreArchivo}
             </div>
           </div>
           <div>
-            <div className="text-slate-500 font-medium">Fecha y Hora</div>
-            <div className="font-semibold text-slate-800">
+            <div className="text-[#64748B] font-medium uppercase tracking-[0.04em] text-[11px]">
+              Fecha y Hora
+            </div>
+            <div className="gov-mono font-medium text-slate-800 mt-0.5">
               {new Date(latest.generadoEn).toLocaleString('es-CO')}
             </div>
           </div>
           <div>
-            <div className="text-slate-500 font-medium">Registros Exportados</div>
-            <div className="font-semibold text-slate-800">
+            <div className="text-[#64748B] font-medium uppercase tracking-[0.04em] text-[11px]">
+              Registros Exportados
+            </div>
+            <div className="gov-mono font-medium text-slate-800 mt-0.5">
               {latest.totalRegistros} fila(s)
             </div>
           </div>
         </div>
 
-        <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-          <div className="flex items-center justify-between gap-2 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-4">
+          <div className="flex items-center justify-between gap-2 mb-1.5">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[#64748B]">
               Huella Digital SHA-256 (Web Crypto API)
             </span>
             <button
               type="button"
               onClick={() => handleCopy(latest.id, latest.sha256)}
-              className="inline-flex items-center gap-1 text-xs font-semibold text-men-blue hover:underline"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-men-accent hover:text-men-accent-hover transition-colors"
             >
               {copiedId === latest.id ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-men-emerald" />
-                  <span className="text-men-emerald">Copiado</span>
+                  <Check className="w-3.5 h-3.5 text-[#065F46]" />
+                  <span className="text-[#065F46]">Copiado</span>
                 </>
               ) : (
                 <>
@@ -104,26 +110,26 @@ export const ReportReceiptCard: React.FC<ReportReceiptCardProps> = ({
               )}
             </button>
           </div>
-          <code className="block text-xs font-mono text-men-navy break-all select-all">
+          <code className="gov-mono block text-xs text-men-navy break-all select-all">
             {latest.sha256}
           </code>
         </div>
 
         {constancias.length > 1 && (
-          <div className="pt-2 border-t border-slate-100">
-            <div className="text-xs font-semibold text-slate-600 mb-2">
+          <div className="pt-4 border-t border-[#E2E8F0]">
+            <div className="text-xs font-semibold text-[#64748B] mb-2">
               Historial de constancias emitidas ({constancias.length})
             </div>
-            <div className="space-y-1.5 max-h-36 overflow-y-auto">
+            <div className="space-y-2 max-h-36 overflow-y-auto">
               {constancias.slice(1).map((item) => (
                 <div
                   key={item.id}
-                  className="flex flex-wrap items-center justify-between gap-2 text-xs bg-slate-50 px-3 py-1.5 rounded-md border border-slate-100"
+                  className="flex flex-wrap items-center justify-between gap-2 text-xs bg-[#F8FAFC] px-3 py-2 rounded-lg border border-[#E2E8F0]"
                 >
-                  <span className="font-medium text-men-navy">
+                  <span className="gov-mono font-medium text-men-navy">
                     {item.id} · {item.nombreArchivo}
                   </span>
-                  <code className="font-mono text-[11px] text-slate-600">
+                  <code className="gov-mono text-[11px] text-[#64748B]">
                     {item.sha256.slice(0, 16)}…{item.sha256.slice(-8)}
                   </code>
                 </div>

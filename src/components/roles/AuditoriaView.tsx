@@ -94,28 +94,27 @@ export const AuditoriaView: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header + Integrity Verification & Demo Tamper Controls */}
-      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-men-navy">
+      <header className="gov-card p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="space-y-1.5">
+          <span className="gov-pill-neutral">
             Perfil 4 · Oficina de Tecnología (Auditoría)
           </span>
-          <h1 className="text-2xl font-bold text-men-navy mt-0.5">
-            Registro de Auditoría Inmutable (<code>audit_log</code>) y Cadena
-            SHA-256
+          <h1 className="text-2xl font-bold text-men-navy">
+            Registro de Auditoría Inmutable (<code className="gov-mono">audit_log</code>) y Cadena SHA-256
           </h1>
-          <p className="text-sm text-slate-600 mt-1">
-            Historial <em>append-only</em> con valores JSON anteriores vs.
+          <p className="text-sm text-slate-600 max-w-3xl">
+            Historial <em>append-only</em> con valores JSON anteriores frente a
             nuevos y encadenamiento criptográfico real vía Web Crypto API (
-            <code>crypto.subtle.digest</code>).
+            <code className="gov-mono text-xs">crypto.subtle.digest</code>).
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
           <button
             type="button"
             onClick={handleVerifyChain}
             disabled={isVerifying}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-men-blue hover:bg-[#0052A3] text-white text-sm font-semibold shadow-sm transition-colors disabled:opacity-60"
+            className="gov-btn-primary"
           >
             <ShieldCheck className="w-4 h-4" />
             <span>
@@ -128,52 +127,46 @@ export const AuditoriaView: React.FC = () => {
           <button
             type="button"
             onClick={handleSimulateTamper}
-            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-men-amber border border-men-amber text-xs font-bold transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#FFFBEB] hover:bg-amber-100 text-[#92400E] border border-[#FDE68A] text-xs font-semibold transition-all duration-150 ease-in-out"
             title="Botón auxiliar de demostración (FR-027): altera un registro para probar la detección criptográfica"
           >
             <FlaskConical className="w-4 h-4" />
             <span>Simular alteración (Demo)</span>
           </button>
         </div>
-      </div>
+      </header>
 
       {/* Tamper Simulation Info Notice */}
       {tamperNotice && !integrityResult && (
         <div
           role="status"
-          className="p-4 rounded-xl bg-amber-50 border border-men-amber text-amber-950 text-xs flex items-start gap-3"
+          className="gov-banner-warning text-xs flex items-start gap-3"
         >
-          <AlertTriangle className="w-5 h-5 text-men-amber shrink-0 mt-0.5" />
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
           <span>{tamperNotice}</span>
         </div>
       )}
 
-      {/* Integrity Verdict Banner */}
+      {/* Integrity Verdict Banner (4px Left Semantic Accent Bar) */}
       {integrityResult && (
         <div
           role="status"
-          className={`p-5 rounded-xl border-2 flex items-start gap-3 ${
-            integrityResult.valid
-              ? 'bg-emerald-50 border-men-emerald text-emerald-950'
-              : 'bg-red-50 border-men-red text-red-950'
-          }`}
+          className={`${
+            integrityResult.valid ? 'gov-banner-success' : 'gov-banner-danger'
+          } p-5 flex items-start gap-3.5`}
         >
           {integrityResult.valid ? (
-            <CheckCircle2 className="w-6 h-6 text-men-emerald shrink-0 mt-0.5" />
+            <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
           ) : (
-            <ShieldAlert className="w-6 h-6 text-men-red shrink-0 mt-0.5" />
+            <ShieldAlert className="w-5 h-5 shrink-0 mt-0.5" />
           )}
           <div className="space-y-1">
-            <div
-              className={`text-base font-bold ${
-                integrityResult.valid ? 'text-men-emerald' : 'text-men-red'
-              }`}
-            >
+            <div className="font-heading text-base font-bold">
               {integrityResult.valid
                 ? `Cadena Criptográfica Íntegra (${integrityResult.totalVerified} de ${state.auditLog.length} registros verificados)`
                 : `Integridad Comprometida — Alteración detectada en ${integrityResult.brokenEntryId}`}
             </div>
-            <p className="text-xs">
+            <p className="text-xs leading-relaxed">
               {integrityResult.valid
                 ? 'Todos los registros desde el bloque génesis hasta el evento más reciente coinciden exactamente con sus digests SHA-256 encadenados.'
                 : `${integrityResult.reason} Puede restablecer un escenario íntegro desde "Restaurar datos de fábrica" en la barra superior.`}
@@ -182,11 +175,11 @@ export const AuditoriaView: React.FC = () => {
         </div>
       )}
 
-      {/* Filters */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
+      {/* Filters Toolbar */}
+      <div className="gov-card p-4 flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-men-navy">
-            <Filter className="w-4 h-4 text-men-blue" />
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-men-navy">
+            <Filter className="w-4 h-4 text-men-accent" />
             <span>Filtros:</span>
           </div>
 
@@ -196,7 +189,7 @@ export const AuditoriaView: React.FC = () => {
             onChange={(e) =>
               setRolFilter(e.target.value as 'TODOS' | RolUsuario)
             }
-            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs focus:border-men-blue focus:outline-none"
+            className="gov-input !w-auto text-xs py-1.5"
           >
             {ROLES_FILTER.map((r) => (
               <option key={r.value} value={r.value}>
@@ -211,7 +204,7 @@ export const AuditoriaView: React.FC = () => {
             onChange={(e) =>
               setAccionFilter(e.target.value as 'TODAS' | TipoAccionAuditoria)
             }
-            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs focus:border-men-blue focus:outline-none"
+            className="gov-input !w-auto gov-mono text-xs py-1.5"
           >
             {ACCIONES_FILTER.map((a) => (
               <option key={a.value} value={a.value}>
@@ -221,14 +214,21 @@ export const AuditoriaView: React.FC = () => {
           </select>
         </div>
 
-        <div className="text-xs text-slate-500">
-          Mostrando <strong>{filteredEntries.length}</strong> de{' '}
-          <strong>{state.auditLog.length}</strong> eventos inmutables
+        <div className="text-xs text-[#64748B]">
+          Mostrando{' '}
+          <strong className="gov-mono text-men-navy">
+            {filteredEntries.length}
+          </strong>{' '}
+          de{' '}
+          <strong className="gov-mono text-men-navy">
+            {state.auditLog.length}
+          </strong>{' '}
+          eventos inmutables
         </div>
       </div>
 
       {/* Append-Only Audit Log List */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {filteredEntries.map((entry) => {
           const isExpanded = expandedId === entry.id;
           const isBroken = integrityResult?.brokenEntryId === entry.id;
@@ -236,47 +236,51 @@ export const AuditoriaView: React.FC = () => {
           return (
             <article
               key={entry.id}
-              className={`bg-white rounded-xl border shadow-sm overflow-hidden ${
-                isBroken ? 'border-2 border-men-red' : 'border-slate-200'
+              className={`gov-card overflow-hidden transition-all duration-150 ${
+                isBroken ? 'border-l-4 border-l-[#DC2626] bg-[#FEF2F2]/20' : ''
               }`}
             >
-              <div className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                <div className="space-y-1 min-w-0">
+              <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="space-y-2 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="px-2 py-0.5 rounded bg-men-navy text-white font-mono text-[11px] font-bold">
+                    <span className="gov-mono px-2.5 py-0.5 rounded-md bg-men-navy text-white text-xs font-semibold">
                       #{entry.secuencia} · {entry.id}
                     </span>
-                    <span className="px-2 py-0.5 rounded-full bg-blue-50 text-men-blue border border-blue-200 text-[11px] font-bold">
-                      {entry.rol}
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-800 font-mono text-[11px] font-semibold">
+                    <span className="gov-pill-info">{entry.rol}</span>
+                    <span className="gov-pill-neutral gov-mono">
                       {entry.accion}
                     </span>
                     {isBroken && (
-                      <span className="px-2 py-0.5 rounded-full bg-men-red text-white text-[11px] font-bold">
+                      <span className="gov-pill-danger font-semibold">
                         REGISTRO COMPROMETIDO
                       </span>
                     )}
                   </div>
 
-                  <div className="text-xs text-slate-600 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <div className="text-xs text-slate-600 flex flex-wrap items-center gap-x-4 gap-y-1">
                     <span>
-                      <strong>Recurso:</strong> {entry.entidadAfectada} (
-                      <code>{entry.registroId}</code>)
+                      <strong className="text-slate-800">Recurso:</strong>{' '}
+                      {entry.entidadAfectada} (
+                      <code className="gov-mono text-men-navy">
+                        {entry.registroId}
+                      </code>
+                      )
                     </span>
                     <span>
-                      <strong>Timestamp:</strong>{' '}
-                      {new Date(entry.timestamp).toLocaleString('es-CO')}
+                      <strong className="text-slate-800">Timestamp:</strong>{' '}
+                      <span className="gov-mono">
+                        {new Date(entry.timestamp).toLocaleString('es-CO')}
+                      </span>
                     </span>
                   </div>
 
-                  <div className="text-[11px] font-mono text-slate-500 flex flex-wrap items-center gap-x-4 gap-y-1">
+                  <div className="gov-mono text-[11px] text-[#64748B] flex flex-wrap items-center gap-x-4 gap-y-1">
                     <span className="inline-flex items-center gap-1">
                       <Link2 className="w-3 h-3 text-slate-400" />
                       Prev: {entry.previousHash.slice(0, 14)}…
                     </span>
-                    <span className="text-men-navy font-semibold">
-                      SHA-256: {entry.hash.slice(0, 22)}…
+                    <span className="text-men-navy font-medium">
+                      SHA-256: {entry.hash.slice(0, 24)}…
                     </span>
                   </div>
                 </div>
@@ -284,7 +288,7 @@ export const AuditoriaView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setExpandedId(isExpanded ? null : entry.id)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-men-navy hover:bg-slate-50 shrink-0 self-start md:self-center"
+                  className="gov-btn-secondary text-xs shrink-0 self-start md:self-center"
                 >
                   <span>
                     {isExpanded
@@ -300,40 +304,40 @@ export const AuditoriaView: React.FC = () => {
               </div>
 
               {isExpanded && (
-                <div className="px-4 pb-4 pt-3 border-t border-slate-100 bg-slate-50/70 space-y-3">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="px-6 pb-6 pt-4 border-t border-[#E2E8F0] bg-[#F8FAFC] space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                      <div className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[#64748B] mb-1.5">
                         Valores Anteriores (JSON)
                       </div>
-                      <pre className="p-3 rounded-lg bg-white border border-slate-200 text-[11px] font-mono text-slate-700 overflow-x-auto max-h-56">
+                      <pre className="gov-mono p-4 rounded-lg bg-white border border-[#E2E8F0] text-[11px] text-slate-700 overflow-x-auto max-h-56">
                         {JSON.stringify(entry.valoresAnteriores, null, 2)}
                       </pre>
                     </div>
                     <div>
-                      <div className="text-[11px] font-bold uppercase tracking-wider text-men-navy mb-1">
+                      <div className="text-[11px] font-semibold uppercase tracking-[0.05em] text-men-navy mb-1.5">
                         Valores Nuevos (JSON)
                       </div>
-                      <pre className="p-3 rounded-lg bg-white border border-slate-200 text-[11px] font-mono text-men-navy overflow-x-auto max-h-56">
+                      <pre className="gov-mono p-4 rounded-lg bg-white border border-[#E2E8F0] text-[11px] text-men-navy overflow-x-auto max-h-56">
                         {JSON.stringify(entry.valoresNuevos, null, 2)}
                       </pre>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px] font-mono">
-                    <div className="p-2.5 rounded-lg bg-white border border-slate-200">
-                      <div className="text-slate-400 font-sans font-bold uppercase text-[10px] mb-0.5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[11px]">
+                    <div className="p-3 rounded-lg bg-white border border-[#E2E8F0]">
+                      <div className="text-[#64748B] font-semibold uppercase tracking-[0.05em] text-[10px] mb-1">
                         previousHash (SHA-256 previo)
                       </div>
-                      <div className="break-all text-slate-600">
+                      <div className="gov-mono break-all text-slate-600">
                         {entry.previousHash}
                       </div>
                     </div>
-                    <div className="p-2.5 rounded-lg bg-white border border-slate-200">
-                      <div className="text-slate-400 font-sans font-bold uppercase text-[10px] mb-0.5">
+                    <div className="p-3 rounded-lg bg-white border border-[#E2E8F0]">
+                      <div className="text-[#64748B] font-semibold uppercase tracking-[0.05em] text-[10px] mb-1">
                         hash (SHA-256 encadenado de este registro)
                       </div>
-                      <div className="break-all text-men-navy font-semibold">
+                      <div className="gov-mono break-all text-men-navy font-semibold">
                         {entry.hash}
                       </div>
                     </div>

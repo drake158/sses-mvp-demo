@@ -13,12 +13,12 @@ export const App: React.FC = () => {
   if (!isReady) {
     return (
       <div className="min-h-screen bg-men-bg flex items-center justify-center p-6">
-        <div className="bg-white border border-slate-200 rounded-xl shadow-sm px-6 py-5 text-center space-y-2 max-w-sm w-full">
-          <div className="w-8 h-8 border-4 border-men-blue border-t-transparent rounded-full animate-spin mx-auto" />
-          <div className="text-sm font-bold text-men-navy">
-            Inicializando SSES MVP Demo
-          </div>
-          <p className="text-xs text-slate-500">
+        <div className="gov-card p-6 text-center space-y-3 max-w-sm w-full">
+          <div className="w-8 h-8 border-2 border-men-navy border-t-men-accent rounded-full animate-spin mx-auto" />
+          <h2 className="text-base font-bold text-men-navy">
+            Inicializando SSES
+          </h2>
+          <p className="text-xs text-[#64748B]">
             Cargando datos sintéticos de Colombia y verificando cadena génesis
             SHA-256...
           </p>

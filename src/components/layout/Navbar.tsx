@@ -92,33 +92,36 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-30 bg-men-navy text-white shadow-md border-b border-white/10">
+      <header className="sticky top-0 z-30 bg-white border-b border-[#E2E8F0] shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
+        {/* Subtle 3px MEN Identity Accent Bar */}
+        <div className="h-[3px] bg-men-navy w-full" />
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap items-center justify-between gap-3 py-3">
-            {/* Brand / Home to Role Selector */}
+          <div className="min-h-[64px] py-2 lg:py-0 flex flex-wrap items-center justify-between gap-3">
+            {/* Institutional Identity */}
             <button
               type="button"
               onClick={() => seleccionarRol(null)}
-              className="flex items-center gap-3 text-left group focus:outline-none"
+              className="flex items-center gap-3 text-left group focus:outline-none rounded-lg focus:ring-2 focus:ring-men-accent/40 pr-2"
               title="Volver al Selector Interactivo de Rol"
             >
-              <div className="w-9 h-9 rounded-lg bg-men-blue flex items-center justify-center font-bold text-sm tracking-tight shadow-sm group-hover:bg-[#0052A3] transition-colors">
+              <div className="w-9 h-9 rounded-lg bg-men-navy text-white flex items-center justify-center font-heading font-bold text-xs tracking-tight transition-colors duration-150 group-hover:bg-men-navy-hover">
                 MEN
               </div>
-              <div>
-                <div className="text-sm font-bold leading-tight tracking-tight">
-                  SSES · MVP Demo
+              <div className="leading-tight">
+                <div className="font-heading text-sm font-bold text-men-navy tracking-tight">
+                  SSES
                 </div>
-                <div className="text-[11px] text-slate-300 leading-tight">
-                  Ministerio de Educación Nacional
+                <div className="text-[11px] text-[#64748B] hidden sm:block">
+                  Ministerio de Educación
                 </div>
               </div>
             </button>
 
-            {/* Quick Role Switcher */}
+            {/* Segmented Role Switcher */}
             <nav
               aria-label="Selector rápido de rol"
-              className="flex items-center gap-1 bg-white/10 p-1 rounded-lg overflow-x-auto max-w-full"
+              className="order-3 lg:order-2 w-full lg:w-auto flex items-center gap-1 bg-[#F1F5F9] p-1 rounded-lg border border-[#E2E8F0] overflow-x-auto"
             >
               {ROLE_OPTIONS.map((item) => {
                 const Icon = item.icon;
@@ -128,79 +131,82 @@ export const Navbar: React.FC = () => {
                     key={item.rol}
                     type="button"
                     onClick={() => seleccionarRol(item.rol)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-colors ${
+                    className={`flex-1 lg:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-all duration-150 ease-in-out ${
                       isActive
-                        ? 'bg-men-blue text-white shadow-sm'
-                        : 'text-slate-200 hover:bg-white/10 hover:text-white'
+                        ? 'bg-men-navy text-white shadow-sm'
+                        : 'text-slate-600 hover:text-men-navy hover:bg-white/80'
                     }`}
                   >
-                    <Icon className="w-3.5 h-3.5" />
-                    <span className="hidden lg:inline">{item.label}</span>
-                    <span className="lg:hidden">{item.shortLabel}</span>
+                    <Icon className="w-3.5 h-3.5 shrink-0" />
+                    <span className="hidden xl:inline">{item.label}</span>
+                    <span className="xl:hidden">{item.shortLabel}</span>
                   </button>
                 );
               })}
             </nav>
 
-            {/* Connectivity Toggle + Factory Reset */}
-            <div className="flex items-center gap-2">
+            {/* Right Context Controls: Segmented Network Status + Factory Reset */}
+            <div className="order-2 lg:order-3 flex items-center gap-2">
               <button
                 type="button"
                 onClick={handleToggleOffline}
                 disabled={isToggling}
                 aria-pressed={state.isOffline}
-                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
-                  state.isOffline
-                    ? 'bg-men-amber text-white border-amber-400 hover:bg-amber-600'
-                    : 'bg-men-emerald text-white border-emerald-400 hover:bg-emerald-700'
-                }`}
-                title="Simular cambio de conectividad En línea / Sin conexión"
+                title="Cambiar estado de conectividad (En línea / Sin conexión)"
+                className="inline-flex items-center p-1 rounded-lg bg-[#F1F5F9] border border-[#E2E8F0] transition-all duration-150 ease-in-out hover:border-men-accent focus:outline-none focus:ring-2 focus:ring-men-accent/30 disabled:opacity-60"
               >
-                {state.isOffline ? (
-                  <>
-                    <WifiOff className="w-3.5 h-3.5" />
-                    <span>Sin conexión</span>
-                  </>
-                ) : (
-                  <>
-                    <Wifi className="w-3.5 h-3.5" />
-                    <span>En línea</span>
-                  </>
-                )}
-                {state.offlineQueue.length > 0 && (
-                  <span className="ml-0.5 px-1.5 py-0.5 rounded-full bg-white text-men-navy text-[10px] font-bold">
-                    {state.offlineQueue.length}
-                  </span>
-                )}
+                <span
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all duration-150 ${
+                    !state.isOffline
+                      ? 'bg-[#ECFDF5] text-[#065F46] border border-[#A7F3D0] shadow-sm'
+                      : 'text-[#64748B] border border-transparent'
+                  }`}
+                >
+                  <Wifi className="w-3.5 h-3.5" />
+                  <span>En línea</span>
+                </span>
+                <span
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all duration-150 ${
+                    state.isOffline
+                      ? 'bg-[#FFFBEB] text-[#92400E] border border-[#FDE68A] shadow-sm'
+                      : 'text-[#64748B] border border-transparent'
+                  }`}
+                >
+                  <WifiOff className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Sin conexión</span>
+                  {state.offlineQueue.length > 0 && (
+                    <span className="gov-mono ml-0.5 px-1.5 py-0.2 rounded-full bg-[#92400E] text-white text-[10px] font-semibold">
+                      {state.offlineQueue.length}
+                    </span>
+                  )}
+                </span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setShowResetModal(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-white text-slate-700 border border-[#E2E8F0] hover:border-men-accent hover:text-men-accent transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-men-accent/30"
                 title="Restaurar datos de fábrica"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">
-                  Restaurar datos de fábrica
-                </span>
+                <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden md:inline">Restaurar</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Sync / Reset Notification Strip */}
+        {/* Soft-Pastel Sync / Reset Notification Strip */}
         {bannerMessage && (
-          <div className="bg-men-emerald text-white text-xs font-medium px-4 py-2 border-t border-white/15">
-            <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+          <div className="bg-[#ECFDF5] text-[#065F46] border-t border-[#A7F3D0] text-xs font-medium px-4 py-2.5">
+            <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-[#065F46]" />
                 <span>{bannerMessage}</span>
               </div>
               <button
                 type="button"
                 onClick={() => setBannerMessage(null)}
-                className="text-white/80 hover:text-white"
+                className="text-[#065F46]/70 hover:text-[#065F46] transition-colors"
                 aria-label="Cerrar aviso"
               >
                 <X className="w-4 h-4" />
@@ -213,56 +219,70 @@ export const Navbar: React.FC = () => {
       {/* Factory Reset Confirmation Modal */}
       {showResetModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 backdrop-blur-sm p-4 transition-opacity duration-150"
           role="dialog"
           aria-modal="true"
           aria-labelledby="reset-modal-title"
         >
-          <div className="bg-white rounded-xl max-w-md w-full shadow-xl border border-slate-200 overflow-hidden">
-            <div className="px-6 py-4 bg-men-navy text-white flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-amber-300" />
-                <h2 id="reset-modal-title" className="text-base font-bold">
+          <div className="gov-card max-w-md w-full overflow-hidden shadow-xl">
+            <div className="px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#FFFBEB] border border-[#FDE68A] text-[#92400E] flex items-center justify-center">
+                  <AlertTriangle className="w-4 h-4" />
+                </div>
+                <h2
+                  id="reset-modal-title"
+                  className="text-base font-bold text-men-navy"
+                >
                   Restaurar datos de fábrica
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={() => setShowResetModal(false)}
-                className="text-slate-300 hover:text-white"
+                className="text-slate-400 hover:text-slate-600 transition-colors"
                 aria-label="Cerrar"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6 space-y-3 text-sm text-slate-700">
+            <div className="p-6 space-y-4 text-sm text-slate-600">
               <p>
-                Esta acción restablecerá completamente el escenario demostrativo
-                a los datos sintéticos iniciales de Colombia:
+                Esta acción restablecerá el escenario demostrativo a los datos
+                sintéticos iniciales del Ministerio de Educación Nacional:
               </p>
-              <ul className="list-disc pl-5 space-y-1 text-xs text-slate-600">
-                <li>
-                  Reinicia estrategias, vinculaciones, acompañamientos y reportes
-                  al estado base.
+              <ul className="space-y-2 text-xs text-slate-600 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-4">
+                <li className="flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-men-navy mt-1.5 shrink-0" />
+                  <span>
+                    Reinicia estrategias, vinculaciones, acompañamientos y
+                    reportes al estado base.
+                  </span>
                 </li>
-                <li>
-                  Limpia cualquier operación pendiente en la cola sin conexión y
-                  restablece el modo <strong>En línea</strong>.
+                <li className="flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-men-navy mt-1.5 shrink-0" />
+                  <span>
+                    Limpia la cola sin conexión y restablece el modo{' '}
+                    <strong className="text-slate-800">En línea</strong>.
+                  </span>
                 </li>
-                <li>
-                  Regenera el <code>audit_log</code> con una cadena criptográfica
-                  SHA-256 íntegra desde el registro génesis.
+                <li className="flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-men-navy mt-1.5 shrink-0" />
+                  <span>
+                    Regenera el <code className="gov-mono">audit_log</code> con
+                    una cadena SHA-256 íntegra desde el bloque génesis.
+                  </span>
                 </li>
               </ul>
             </div>
 
-            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3">
+            <div className="px-6 py-4 bg-[#F8FAFC] border-t border-[#E2E8F0] flex items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setShowResetModal(false)}
                 disabled={isResetting}
-                className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100"
+                className="gov-btn-secondary text-xs"
               >
                 Cancelar
               </button>
@@ -270,7 +290,7 @@ export const Navbar: React.FC = () => {
                 type="button"
                 onClick={handleConfirmReset}
                 disabled={isResetting}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-white bg-men-red hover:bg-red-700 disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-white bg-[#991B1B] hover:bg-red-900 transition-colors duration-150 disabled:opacity-60"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>

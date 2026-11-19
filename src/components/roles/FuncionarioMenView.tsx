@@ -260,27 +260,25 @@ export const FuncionarioMenView: React.FC = () => {
   }, [selectedStrategy, state.estudiantes]);
 
   return (
-    <div className="space-y-8">
-      {/* Header + CSV Download */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-        <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-men-blue">
-            Perfil 1 · Funcionario MEN
-          </span>
-          <h1 className="text-2xl font-bold text-men-navy mt-0.5">
-            Gestión de Estrategias Estudiantiles y Tablero de Cumplimiento
+    <div className="space-y-6">
+      {/* Editorial Role Header + Primary Export CTA */}
+      <header className="gov-card p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="space-y-1.5">
+          <span className="gov-pill-info">Perfil 1 · Funcionario MEN</span>
+          <h1 className="text-2xl font-bold text-men-navy">
+            Gestión de Estrategias Estudiantiles y Cumplimiento
           </h1>
-          <p className="text-sm text-slate-600 mt-1">
+          <p className="text-sm text-slate-600 max-w-2xl">
             Cree estrategias en entidades educativas activas, administre la
-            vinculación de estudiantes con regla de inmutabilidad y descargue
-            reportes CSV con constancia SHA-256.
+            vinculación de estudiantes bajo la regla de inmutabilidad y
+            descargue reportes CSV con constancia SHA-256.
           </p>
         </div>
         <button
           type="button"
           onClick={handleDownloadCsv}
           disabled={isExporting}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-men-blue hover:bg-[#0052A3] text-white text-sm font-semibold shadow-sm transition-colors shrink-0 disabled:opacity-60"
+          className="gov-btn-primary shrink-0"
         >
           <Download className="w-4 h-4" />
           <span>
@@ -289,26 +287,28 @@ export const FuncionarioMenView: React.FC = () => {
               : 'Descargar Reporte CSV (SHA-256)'}
           </span>
         </button>
-      </div>
+      </header>
 
       {/* KPIs + Alerts + Latest Receipt */}
       <KpiDashboard kpis={kpis} />
       <ReportReceiptCard constancias={constanciasMen} />
 
-      {/* Create Strategy + Strategies List & Linking */}
+      {/* Main 12-Col Grid: Create Strategy + Strategies List & Linking */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left column: Create Strategy Form */}
-        <section className="lg:col-span-5 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 bg-men-navy text-white flex items-center gap-2">
-            <PlusCircle className="w-4 h-4 text-sky-300" />
-            <h2 className="text-sm font-bold">Crear Nueva Estrategia</h2>
+        <section className="lg:col-span-5 gov-card overflow-hidden">
+          <div className="px-6 py-4 bg-[#F1F5F9] border-b border-[#E2E8F0] flex items-center gap-2.5">
+            <PlusCircle className="w-4 h-4 text-men-navy" />
+            <h2 className="text-sm font-bold text-men-navy">
+              Crear Nueva Estrategia
+            </h2>
           </div>
 
-          <form onSubmit={handleCreateStrategy} className="p-5 space-y-4">
+          <form onSubmit={handleCreateStrategy} className="p-6 space-y-4">
             <div>
               <label
                 htmlFor="str-nombre"
-                className="block text-xs font-semibold text-slate-700 mb-1"
+                className="block text-xs font-semibold text-slate-700 mb-1.5"
               >
                 Nombre de la estrategia *
               </label>
@@ -319,14 +319,14 @@ export const FuncionarioMenView: React.FC = () => {
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
                 placeholder="Ej. Plan de Nivelación en Ciencias Básicas"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-men-blue focus:outline-none focus:ring-1 focus:ring-men-blue"
+                className="gov-input"
               />
             </div>
 
             <div>
               <label
                 htmlFor="str-descripcion"
-                className="block text-xs font-semibold text-slate-700 mb-1"
+                className="block text-xs font-semibold text-slate-700 mb-1.5"
               >
                 Descripción / Alcance pedagógico
               </label>
@@ -336,14 +336,14 @@ export const FuncionarioMenView: React.FC = () => {
                 value={descripcion}
                 onChange={(e) => setDescripcion(e.target.value)}
                 placeholder="Objetivo de la estrategia en la institución educativa..."
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-men-blue focus:outline-none focus:ring-1 focus:ring-men-blue"
+                className="gov-input"
               />
             </div>
 
             <div>
               <label
                 htmlFor="str-entidad"
-                className="block text-xs font-semibold text-slate-700 mb-1"
+                className="block text-xs font-semibold text-slate-700 mb-1.5"
               >
                 Entidad Educativa (solo estado ACTIVA) *
               </label>
@@ -351,7 +351,7 @@ export const FuncionarioMenView: React.FC = () => {
                 id="str-entidad"
                 value={entidadId}
                 onChange={(e) => setEntidadId(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-men-blue focus:outline-none focus:ring-1 focus:ring-men-blue"
+                className="gov-input"
               >
                 {state.entidades.map((ent) => (
                   <option
@@ -366,17 +366,17 @@ export const FuncionarioMenView: React.FC = () => {
                   </option>
                 ))}
               </select>
-              <p className="text-[11px] text-slate-500 mt-1">
+              <p className="text-[11px] text-[#64748B] mt-1.5">
                 Regla FR-006: Las entidades inactivas (ej. Tunja) están
                 bloqueadas para nuevas estrategias.
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label
                   htmlFor="str-inicio"
-                  className="block text-xs font-semibold text-slate-700 mb-1"
+                  className="block text-xs font-semibold text-slate-700 mb-1.5"
                 >
                   Fecha de inicio *
                 </label>
@@ -386,13 +386,13 @@ export const FuncionarioMenView: React.FC = () => {
                   required
                   value={fechaInicio}
                   onChange={(e) => setFechaInicio(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-men-blue focus:outline-none focus:ring-1 focus:ring-men-blue"
+                  className="gov-input gov-mono text-xs"
                 />
               </div>
               <div>
                 <label
                   htmlFor="str-fin"
-                  className="block text-xs font-semibold text-slate-700 mb-1"
+                  className="block text-xs font-semibold text-slate-700 mb-1.5"
                 >
                   Fecha de fin *
                 </label>
@@ -402,7 +402,7 @@ export const FuncionarioMenView: React.FC = () => {
                   required
                   value={fechaFin}
                   onChange={(e) => setFechaFin(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-men-blue focus:outline-none focus:ring-1 focus:ring-men-blue"
+                  className="gov-input gov-mono text-xs"
                 />
               </div>
             </div>
@@ -410,7 +410,7 @@ export const FuncionarioMenView: React.FC = () => {
             {createError && (
               <div
                 role="alert"
-                className="p-3 rounded-lg bg-red-50 border border-men-red text-men-red text-xs flex items-start gap-2"
+                className="gov-banner-danger text-xs flex items-start gap-2.5"
               >
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>{createError}</span>
@@ -418,7 +418,7 @@ export const FuncionarioMenView: React.FC = () => {
             )}
 
             {createSuccess && (
-              <div className="p-3 rounded-lg bg-emerald-50 border border-men-emerald text-men-emerald text-xs flex items-start gap-2">
+              <div className="gov-banner-success text-xs flex items-start gap-2.5">
                 <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>{createSuccess}</span>
               </div>
@@ -427,7 +427,7 @@ export const FuncionarioMenView: React.FC = () => {
             <button
               type="submit"
               disabled={isCreating}
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-men-blue hover:bg-[#0052A3] text-white font-semibold text-sm transition-colors disabled:opacity-60"
+              className="gov-btn-primary w-full"
             >
               <PlusCircle className="w-4 h-4" />
               <span>
@@ -440,19 +440,19 @@ export const FuncionarioMenView: React.FC = () => {
         </section>
 
         {/* Right column: Strategies list + Edit + Student Linking */}
-        <section className="lg:col-span-7 space-y-5">
-          {/* Strategies selector cards */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-              <h2 className="text-sm font-bold text-men-navy">
+        <section className="lg:col-span-7 space-y-6">
+          {/* Strategies List Card */}
+          <div className="gov-card overflow-hidden">
+            <div className="px-6 py-4 bg-[#F1F5F9] border-b border-[#E2E8F0] flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-xs font-semibold uppercase tracking-[0.05em] text-[#64748B]">
                 Estrategias Registradas ({state.estrategias.length})
               </h2>
-              <span className="text-xs text-slate-500">
-                Seleccione una estrategia para editar o vincular estudiantes
+              <span className="text-xs text-[#64748B]">
+                Seleccione una fila para gestionar
               </span>
             </div>
 
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-[#E2E8F0]">
               {state.estrategias.map((est) => {
                 const ent = entidadesById.get(est.entidadId);
                 const isSelected = selectedStrategy?.id === est.id;
@@ -471,41 +471,41 @@ export const FuncionarioMenView: React.FC = () => {
                         setEditingId(null);
                       }
                     }}
-                    className={`p-4 cursor-pointer transition-colors ${
+                    className={`px-6 py-4 cursor-pointer transition-colors duration-150 ${
                       isSelected
-                        ? 'bg-blue-50/60 border-l-4 border-l-men-blue'
-                        : 'hover:bg-slate-50'
+                        ? 'bg-sky-50/60 border-l-4 border-l-men-accent'
+                        : 'hover:bg-[#F8FAFC] border-l-4 border-l-transparent'
                     }`}
                   >
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div>
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="space-y-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs font-mono font-bold text-men-navy">
+                          <span className="gov-mono text-xs font-semibold text-men-accent">
                             {est.id}
                           </span>
                           <h3 className="text-sm font-bold text-men-navy">
                             {est.nombre}
                           </h3>
                         </div>
-                        <p className="text-xs text-slate-600 mt-0.5">
+                        <p className="text-xs text-[#64748B]">
                           {ent?.nombre ?? est.entidadId} · {ent?.municipio} ·{' '}
-                          {est.fechaInicio} → {est.fechaFin}
+                          <span className="gov-mono">
+                            {est.fechaInicio} → {est.fechaFin}
+                          </span>
                         </p>
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0">
                         <span
-                          className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full border ${
-                            editable
-                              ? 'bg-blue-50 text-men-blue border-blue-200'
-                              : 'bg-emerald-50 text-men-emerald border-emerald-200'
-                          }`}
+                          className={
+                            editable ? 'gov-pill-info' : 'gov-pill-danger'
+                          }
                         >
                           {!editable && <Lock className="w-3 h-3" />}
                           <span>{est.estado}</span>
                         </span>
-                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-700 bg-slate-100 px-2 py-1 rounded-full">
-                          <Users className="w-3.5 h-3.5 text-men-navy" />
+                        <span className="gov-pill-neutral gov-mono">
+                          <Users className="w-3 h-3 text-men-navy" />
                           {est.estudianteIds.length}
                         </span>
                       </div>
@@ -518,18 +518,19 @@ export const FuncionarioMenView: React.FC = () => {
 
           {/* Selected Strategy Detail, Immutability Banner, Edit Form & Linking Panel */}
           {selectedStrategy && (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-5">
-              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
-                <div>
-                  <div className="text-xs font-mono text-slate-500">
+            <div className="gov-card p-6 space-y-6">
+              <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#E2E8F0] pb-4">
+                <div className="space-y-1">
+                  <div className="gov-mono text-xs text-[#64748B]">
                     {selectedStrategy.id} ·{' '}
                     {entidadesById.get(selectedStrategy.entidadId)?.nombre}
                   </div>
                   <h3 className="text-lg font-bold text-men-navy">
                     {selectedStrategy.nombre}
                   </h3>
-                  <p className="text-xs text-slate-600 mt-1">
-                    {selectedStrategy.descripcion || 'Sin descripción registrada.'}
+                  <p className="text-xs text-slate-600">
+                    {selectedStrategy.descripcion ||
+                      'Sin descripción registrada.'}
                   </p>
                 </div>
 
@@ -537,11 +538,11 @@ export const FuncionarioMenView: React.FC = () => {
                   type="button"
                   disabled={!puedeEditarEstrategia(selectedStrategy)}
                   onClick={() => startEdit(selectedStrategy)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border transition-colors ${
+                  className={
                     puedeEditarEstrategia(selectedStrategy)
-                      ? 'bg-white text-men-blue border-men-blue hover:bg-blue-50'
-                      : 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
-                  }`}
+                      ? 'gov-btn-secondary text-xs'
+                      : 'inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-[#F1F5F9] text-slate-400 border border-[#E2E8F0] cursor-not-allowed'
+                  }
                 >
                   {puedeEditarEstrategia(selectedStrategy) ? (
                     <>
@@ -557,20 +558,20 @@ export const FuncionarioMenView: React.FC = () => {
                 </button>
               </div>
 
-              {/* Immutability Explanatory Banner when CON_ESTUDIANTES (FR-011) */}
+              {/* Immutability Explanatory Banner (4px Left Semantic Accent Bar — FR-011) */}
               {!puedeEditarEstrategia(selectedStrategy) && (
                 <div
                   role="status"
-                  className="p-4 rounded-lg bg-red-50 border border-men-red text-men-red flex items-start gap-3"
+                  className="gov-banner-danger flex items-start gap-3"
                 >
-                  <Lock className="w-5 h-5 shrink-0 mt-0.5" />
+                  <Lock className="w-4 h-4 shrink-0 mt-0.5 text-[#991B1B]" />
                   <div className="text-xs space-y-1">
-                    <div className="font-bold text-sm">
+                    <div className="font-heading font-bold text-sm text-[#991B1B]">
                       Regla de Inmutabilidad Activa — Estado CON_ESTUDIANTES
                     </div>
-                    <p>
+                    <p className="leading-relaxed">
                       Esta estrategia cuenta con{' '}
-                      <strong>
+                      <strong className="gov-mono">
                         {selectedStrategy.estudianteIds.length} estudiante(s)
                         vinculado(s)
                       </strong>
@@ -585,7 +586,7 @@ export const FuncionarioMenView: React.FC = () => {
               )}
 
               {editSuccess && (
-                <div className="p-3 rounded-lg bg-emerald-50 border border-men-emerald text-men-emerald text-xs flex items-center gap-2">
+                <div className="gov-banner-success text-xs flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 shrink-0" />
                   <span>{editSuccess}</span>
                 </div>
@@ -596,16 +597,16 @@ export const FuncionarioMenView: React.FC = () => {
                 puedeEditarEstrategia(selectedStrategy) && (
                   <form
                     onSubmit={handleSaveEdit}
-                    className="p-4 rounded-xl bg-blue-50/50 border border-blue-200 space-y-3"
+                    className="p-4 rounded-xl bg-[#F8FAFC] border border-sky-200 space-y-4"
                   >
                     <div className="flex items-center justify-between">
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-men-navy">
+                      <h4 className="text-xs font-bold uppercase tracking-[0.05em] text-men-navy">
                         Editar Estrategia ({selectedStrategy.id})
                       </h4>
                       <button
                         type="button"
                         onClick={() => setEditingId(null)}
-                        className="text-slate-500 hover:text-slate-700"
+                        className="text-slate-400 hover:text-slate-600 transition-colors"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -620,7 +621,7 @@ export const FuncionarioMenView: React.FC = () => {
                         required
                         value={editNombre}
                         onChange={(e) => setEditNombre(e.target.value)}
-                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm"
+                        className="gov-input"
                       />
                     </div>
 
@@ -632,11 +633,11 @@ export const FuncionarioMenView: React.FC = () => {
                         rows={2}
                         value={editDescripcion}
                         onChange={(e) => setEditDescripcion(e.target.value)}
-                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm"
+                        className="gov-input"
                       />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-xs font-semibold text-slate-700 mb-1">
                           Entidad (ACTIVA)
@@ -644,7 +645,7 @@ export const FuncionarioMenView: React.FC = () => {
                         <select
                           value={editEntidadId}
                           onChange={(e) => setEditEntidadId(e.target.value)}
-                          className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs"
+                          className="gov-input text-xs"
                         >
                           {state.entidades.map((ent) => (
                             <option
@@ -666,7 +667,7 @@ export const FuncionarioMenView: React.FC = () => {
                           required
                           value={editFechaInicio}
                           onChange={(e) => setEditFechaInicio(e.target.value)}
-                          className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs"
+                          className="gov-input gov-mono text-xs"
                         />
                       </div>
                       <div>
@@ -678,13 +679,13 @@ export const FuncionarioMenView: React.FC = () => {
                           required
                           value={editFechaFin}
                           onChange={(e) => setEditFechaFin(e.target.value)}
-                          className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs"
+                          className="gov-input gov-mono text-xs"
                         />
                       </div>
                     </div>
 
                     {editError && (
-                      <div className="p-2.5 rounded-lg bg-red-50 border border-men-red text-men-red text-xs">
+                      <div className="gov-banner-danger text-xs">
                         {editError}
                       </div>
                     )}
@@ -693,14 +694,11 @@ export const FuncionarioMenView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setEditingId(null)}
-                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-300 text-slate-700"
+                        className="gov-btn-secondary text-xs"
                       >
                         Cancelar
                       </button>
-                      <button
-                        type="submit"
-                        className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-men-blue text-white hover:bg-[#0052A3]"
-                      >
+                      <button type="submit" className="gov-btn-accent text-xs">
                         Guardar cambios
                       </button>
                     </div>
@@ -708,36 +706,40 @@ export const FuncionarioMenView: React.FC = () => {
                 )}
 
               {/* Currently Linked Students */}
-              <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
-                  Estudiantes Vinculados ({selectedStrategy.estudianteIds.length})
+              <div className="space-y-3">
+                <h4 className="text-xs font-semibold uppercase tracking-[0.05em] text-[#64748B]">
+                  Estudiantes Vinculados ({selectedStrategy.estudianteIds.length}
+                  )
                 </h4>
                 {selectedStrategy.estudianteIds.length === 0 ? (
-                  <p className="text-xs text-slate-500 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                  <p className="text-xs text-[#64748B] bg-[#F8FAFC] p-4 rounded-lg border border-[#E2E8F0]">
                     No hay estudiantes vinculados todavía. Vincule al menos 1
                     estudiante de esta entidad para activar el estado{' '}
-                    <code>CON_ESTUDIANTES</code>.
+                    <code className="gov-mono text-men-navy">
+                      CON_ESTUDIANTES
+                    </code>
+                    .
                   </p>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {selectedStrategy.estudianteIds.map((id) => {
                       const est = estudiantesById.get(id);
                       if (!est) return null;
                       return (
                         <div
                           key={id}
-                          className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-xs"
+                          className="flex items-center justify-between px-4 py-3 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] text-xs"
                         >
-                          <div>
-                            <div className="font-semibold text-men-navy">
+                          <div className="min-w-0">
+                            <div className="font-medium text-men-navy truncate">
                               {est.nombreCompleto}
                             </div>
-                            <div className="text-slate-500 font-mono">
+                            <div className="gov-mono text-[#64748B] text-[11px] mt-0.5">
                               {est.tipoDocumento} {est.numeroDocumento} · Grado{' '}
                               {est.grado}
                             </div>
                           </div>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-men-emerald border border-emerald-200">
+                          <span className="gov-pill-success shrink-0 ml-2">
                             Vinculado
                           </span>
                         </div>
@@ -747,20 +749,20 @@ export const FuncionarioMenView: React.FC = () => {
                 )}
               </div>
 
-              {/* Student Linking Panel: Individual & Bulk Tabs */}
-              <div className="border-t border-slate-200 pt-4 space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 text-sm font-bold text-men-navy">
-                    <UserPlus className="w-4 h-4 text-men-blue" />
+              {/* Student Linking Panel: Segmented Individual & Bulk Tabs */}
+              <div className="border-t border-[#E2E8F0] pt-6 space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-sm font-heading font-bold text-men-navy">
+                    <UserPlus className="w-4 h-4 text-men-accent" />
                     <span>Vincular Estudiantes (Misma Entidad)</span>
                   </div>
-                  <div className="inline-flex rounded-lg bg-slate-100 p-0.5 text-xs font-semibold">
+                  <div className="inline-flex rounded-lg bg-[#F1F5F9] border border-[#E2E8F0] p-1 text-xs font-medium">
                     <button
                       type="button"
                       onClick={() => setLinkTab('INDIVIDUAL')}
-                      className={`px-3 py-1 rounded-md transition-colors ${
+                      className={`px-3 py-1 rounded-md transition-all duration-150 ${
                         linkTab === 'INDIVIDUAL'
-                          ? 'bg-men-blue text-white'
+                          ? 'bg-men-navy text-white shadow-sm'
                           : 'text-slate-600 hover:text-men-navy'
                       }`}
                     >
@@ -769,9 +771,9 @@ export const FuncionarioMenView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setLinkTab('MASIVA')}
-                      className={`px-3 py-1 rounded-md transition-colors ${
+                      className={`px-3 py-1 rounded-md transition-all duration-150 ${
                         linkTab === 'MASIVA'
-                          ? 'bg-men-blue text-white'
+                          ? 'bg-men-navy text-white shadow-sm'
                           : 'text-slate-600 hover:text-men-navy'
                       }`}
                     >
@@ -783,33 +785,33 @@ export const FuncionarioMenView: React.FC = () => {
                 {linkTab === 'INDIVIDUAL' ? (
                   <div className="space-y-3">
                     <div className="relative">
-                      <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                      <Search className="w-4 h-4 text-[#64748B] absolute left-3 top-2.5" />
                       <input
                         type="text"
                         value={studentQuery}
                         onChange={(e) => setStudentQuery(e.target.value)}
                         placeholder="Buscar por nombre o número de documento en esta entidad..."
-                        className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-slate-300 focus:border-men-blue focus:outline-none"
+                        className="gov-input pl-9 text-xs"
                       />
                     </div>
 
                     {availableStudentsForSelected.length === 0 ? (
-                      <p className="text-xs text-slate-500 p-3 bg-slate-50 rounded-lg">
+                      <p className="text-xs text-[#64748B] p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
                         No hay más estudiantes disponibles sin vincular en{' '}
                         {entidadesById.get(selectedStrategy.entidadId)?.nombre}.
                       </p>
                     ) : (
-                      <div className="space-y-2 max-h-52 overflow-y-auto">
+                      <div className="space-y-2 max-h-56 overflow-y-auto">
                         {availableStudentsForSelected.map((est) => (
                           <div
                             key={est.id}
-                            className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg border border-slate-200 text-xs"
+                            className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg border border-[#E2E8F0] bg-white hover:bg-[#F8FAFC] transition-colors text-xs"
                           >
                             <div>
-                              <div className="font-semibold text-men-navy">
+                              <div className="font-medium text-men-navy">
                                 {est.nombreCompleto}
                               </div>
-                              <div className="text-slate-500 font-mono">
+                              <div className="gov-mono text-[#64748B] text-[11px] mt-0.5">
                                 {est.tipoDocumento} {est.numeroDocumento} ·
                                 Grado {est.grado}
                               </div>
@@ -820,7 +822,7 @@ export const FuncionarioMenView: React.FC = () => {
                               onClick={() =>
                                 handleLinkSingle(est.numeroDocumento)
                               }
-                              className="px-3 py-1.5 rounded-lg bg-men-blue hover:bg-[#0052A3] text-white font-semibold shrink-0 disabled:opacity-60"
+                              className="gov-btn-accent px-3 py-1.5 text-xs shrink-0"
                             >
                               Vincular
                             </button>
@@ -835,7 +837,7 @@ export const FuncionarioMenView: React.FC = () => {
                       Pegue números de documento separados por saltos de línea,
                       comas o punto y coma. Documentos de esta entidad para
                       prueba rápida:{' '}
-                      <code className="bg-slate-100 px-1.5 py-0.5 rounded font-mono text-men-navy">
+                      <code className="gov-mono bg-[#F1F5F9] border border-[#E2E8F0] px-2 py-0.5 rounded text-men-navy">
                         {sampleEntityDocs || 'Sin estudiantes en entidad'}
                       </code>
                     </div>
@@ -844,12 +846,12 @@ export const FuncionarioMenView: React.FC = () => {
                       value={bulkText}
                       onChange={(e) => setBulkText(e.target.value)}
                       placeholder="Ej: 1144087311, 1144087312, 1020304821, 9999999999"
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-mono focus:border-men-blue focus:outline-none"
+                      className="gov-input gov-mono text-xs"
                     />
                     <button
                       type="submit"
                       disabled={isLinking}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-men-blue hover:bg-[#0052A3] text-white text-xs font-semibold disabled:opacity-60"
+                      className="gov-btn-accent text-xs"
                     >
                       <UserPlus className="w-3.5 h-3.5" />
                       <span>
@@ -862,59 +864,63 @@ export const FuncionarioMenView: React.FC = () => {
                 )}
 
                 {linkError && (
-                  <div className="p-3 rounded-lg bg-red-50 border border-men-red text-men-red text-xs">
-                    {linkError}
-                  </div>
+                  <div className="gov-banner-danger text-xs">{linkError}</div>
                 )}
 
                 {lastLinkResult && (
-                  <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200 text-xs space-y-2">
-                    <div className="font-bold text-men-navy">
+                  <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-xs space-y-3">
+                    <div className="font-heading font-bold text-men-navy">
                       Resumen de Vinculación de Estudiantes
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      <div className="p-2 rounded-md bg-emerald-50 border border-emerald-200 text-men-emerald">
-                        <div className="font-bold text-base">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div className="p-3 rounded-lg bg-[#ECFDF5] border border-[#A7F3D0] text-[#065F46]">
+                        <div className="gov-mono font-bold text-lg">
                           {lastLinkResult.vinculados.length}
                         </div>
-                        <div>Vinculados</div>
+                        <div className="font-medium">Vinculados</div>
                       </div>
-                      <div className="p-2 rounded-md bg-slate-100 border border-slate-200 text-slate-700">
-                        <div className="font-bold text-base">
+                      <div className="p-3 rounded-lg bg-[#F1F5F9] border border-[#E2E8F0] text-slate-700">
+                        <div className="gov-mono font-bold text-lg">
                           {lastLinkResult.yaVinculados.length}
                         </div>
-                        <div>Duplicados omitidos</div>
+                        <div className="font-medium">Duplicados</div>
                       </div>
-                      <div className="p-2 rounded-md bg-red-50 border border-red-200 text-men-red">
-                        <div className="font-bold text-base">
+                      <div className="p-3 rounded-lg bg-[#FEF2F2] border border-[#FECACA] text-[#991B1B]">
+                        <div className="gov-mono font-bold text-lg">
                           {lastLinkResult.otraEntidad.length}
                         </div>
-                        <div>Otra entidad (rech.)</div>
+                        <div className="font-medium">Otra entidad</div>
                       </div>
-                      <div className="p-2 rounded-md bg-amber-50 border border-amber-200 text-men-amber">
-                        <div className="font-bold text-base">
+                      <div className="p-3 rounded-lg bg-[#FFFBEB] border border-[#FDE68A] text-[#92400E]">
+                        <div className="gov-mono font-bold text-lg">
                           {lastLinkResult.noEncontrados.length}
                         </div>
-                        <div>No encontrados</div>
+                        <div className="font-medium">No encontrados</div>
                       </div>
                     </div>
 
                     {lastLinkResult.otraEntidad.length > 0 && (
-                      <div className="text-men-red">
+                      <div className="text-[#991B1B]">
                         <strong>Rechazados por pertenecer a otra entidad:</strong>{' '}
-                        {lastLinkResult.otraEntidad.join(', ')}
+                        <span className="gov-mono">
+                          {lastLinkResult.otraEntidad.join(', ')}
+                        </span>
                       </div>
                     )}
                     {lastLinkResult.yaVinculados.length > 0 && (
                       <div className="text-slate-600">
                         <strong>Ya vinculados (omitidos):</strong>{' '}
-                        {lastLinkResult.yaVinculados.join(', ')}
+                        <span className="gov-mono">
+                          {lastLinkResult.yaVinculados.join(', ')}
+                        </span>
                       </div>
                     )}
                     {lastLinkResult.noEncontrados.length > 0 && (
-                      <div className="text-men-amber">
+                      <div className="text-[#92400E]">
                         <strong>No encontrados en catálogo:</strong>{' '}
-                        {lastLinkResult.noEncontrados.join(', ')}
+                        <span className="gov-mono">
+                          {lastLinkResult.noEncontrados.join(', ')}
+                        </span>
                       </div>
                     )}
                   </div>
