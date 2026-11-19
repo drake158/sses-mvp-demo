@@ -1,17 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  AlertCircle,
-  Calendar,
-  CheckCircle2,
-  Clock,
-  CloudOff,
-  PlusCircle,
-  Users,
-  WifiOff,
-  XCircle,
-} from 'lucide-react';
+import { CloudOff, Plus } from 'lucide-react';
 import { useSses } from '../../context/SsesContext';
 import type { ModalidadAcompanamiento } from '../../types/sses';
+import { StatusBadge } from '../common/StatusBadge';
 
 export const TutorView: React.FC = () => {
   const { state, registrarAcompanamiento, actualizarAvanceSemanal } = useSses();
@@ -117,8 +108,8 @@ export const TutorView: React.FC = () => {
       setObservaciones('');
       setFormSuccess(
         res.data.estadoSincronizacion === 'PENDIENTE_SINCRONIZACION'
-          ? `Acompañamiento ${res.data.id} guardado en cola offline con 4 semanas PENDIENTE (Idempotency-Key: ${res.data.idempotencyKey.slice(0, 18)}…).`
-          : `Acompañamiento ${res.data.id} registrado en línea con 4 semanas PENDIENTE autogeneradas.`
+          ? `En cola offline · ${res.data.id}`
+          : `Registrado · ${res.data.id}`
       );
     } finally {
       setIsSaving(false);
@@ -146,8 +137,8 @@ export const TutorView: React.FC = () => {
     }
     setWeekFeedback(
       res.data.estadoSincronizacion === 'PENDIENTE_SINCRONIZACION'
-        ? `Semana ${res.data.numeroSemana} marcada como REALIZADO en cola offline (Pendiente de sincronización).`
-        : `Semana ${res.data.numeroSemana} actualizada a REALIZADO.`
+        ? `Semana ${res.data.numeroSemana} · Realizado (cola offline)`
+        : `Semana ${res.data.numeroSemana} · Realizado`
     );
   };
 
@@ -171,69 +162,51 @@ export const TutorView: React.FC = () => {
     setMotivoDraft('');
     setWeekFeedback(
       res.data.estadoSincronizacion === 'PENDIENTE_SINCRONIZACION'
-        ? `Semana ${res.data.numeroSemana} marcada como NO_REALIZADO en cola offline.`
-        : `Semana ${res.data.numeroSemana} marcada como NO_REALIZADO con justificación registrada.`
+        ? `Semana ${res.data.numeroSemana} · No realizado (cola offline)`
+        : `Semana ${res.data.numeroSemana} · No realizado`
     );
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <header className="gov-card p-6 space-y-1.5">
-        <span className="gov-pill-warning">Perfil 2 · Tutor Territorial</span>
-        <h1 className="text-2xl font-bold text-men-navy">
-          Acompañamientos Mensuales, Seguimiento Semanal y Modo Offline
-        </h1>
-        <p className="text-sm text-slate-600 max-w-3xl">
-          Registre acompañamientos individuales o grupales (4 semanas PENDIENTE
-          autogeneradas), reporte el avance semanal y pruebe el control{' '}
-          <strong className="text-men-navy">En línea / Sin conexión</strong> en
-          la barra superior.
-        </p>
+    <div className="space-y-8">
+      {/* Minimal Header */}
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-semibold tracking-[-0.025em] text-[#0F172A]">
+            Acompañamientos
+          </h1>
+          <StatusBadge tone="warning">Tutor Territorial</StatusBadge>
+        </div>
+
+        {state.isOffline && (
+          <StatusBadge
+            tone="warning"
+            mono
+            title="Los registros se almacenan localmente con Idempotency-Key y se sincronizan al volver en línea."
+          >
+            Cola offline: {state.offlineQueue.length}
+          </StatusBadge>
+        )}
       </header>
 
-      {/* Offline Contextual Banner (4px Left Amber Bar) */}
       {state.isOffline && (
-        <div
-          role="status"
-          className="gov-banner-warning flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-        >
-          <div className="flex items-start gap-3">
-            <WifiOff className="w-5 h-5 text-[#92400E] shrink-0 mt-0.5" />
-            <div className="text-xs space-y-1">
-              <div className="font-heading font-bold text-sm text-[#92400E]">
-                Modo &quot;Sin conexión&quot; Activo — Cola Local con
-                Idempotency-Key
-              </div>
-              <p className="leading-relaxed">
-                Los acompañamientos y avances semanales que guarde ahora se
-                almacenarán localmente con insignia{' '}
-                <strong>&quot;Pendiente de sincronización&quot;</strong>. Al
-                volver a <strong>&quot;En línea&quot;</strong> en el encabezado,
-                se sincronizarán automáticamente sin generar duplicados.
-              </p>
-            </div>
-          </div>
-          <span className="gov-pill-warning gov-mono shrink-0 font-semibold">
-            {state.offlineQueue.length} en cola local
-          </span>
+        <div role="status" className="sses-notice-warning">
+          Modo Offline · Sincronización automática al reconectar.
         </div>
       )}
 
       {weekFeedback && (
-        <div className="gov-banner-success text-xs flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
-          <span>{weekFeedback}</span>
+        <div role="status" className="sses-notice-success">
+          {weekFeedback}
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left: Create Monthly Accompaniment Form */}
-        <section className="lg:col-span-5 gov-card overflow-hidden">
-          <div className="px-6 py-4 bg-[#F1F5F9] border-b border-[#E2E8F0] flex items-center gap-2.5">
-            <PlusCircle className="w-4 h-4 text-men-navy" />
-            <h2 className="text-sm font-bold text-men-navy">
-              Registrar Acompañamiento Mensual
+        {/* Left: Create Form */}
+        <section className="lg:col-span-5 sses-card overflow-hidden">
+          <div className="px-6 py-4 border-b border-[#E5E7EB]">
+            <h2 className="text-sm font-medium text-[#0F172A]">
+              Nuevo acompañamiento
             </h2>
           </div>
 
@@ -241,15 +214,15 @@ export const TutorView: React.FC = () => {
             <div>
               <label
                 htmlFor="aco-estrategia"
-                className="block text-xs font-semibold text-slate-700 mb-1.5"
+                className="block text-xs font-medium text-[#64748B] mb-1.5"
               >
-                Estrategia asociada *
+                Estrategia
               </label>
               <select
                 id="aco-estrategia"
                 value={estrategiaId}
                 onChange={(e) => setEstrategiaId(e.target.value)}
-                className="gov-input"
+                className="sses-input"
               >
                 {state.estrategias.map((est) => {
                   const ent = entidadesById.get(est.entidadId);
@@ -266,15 +239,15 @@ export const TutorView: React.FC = () => {
               <div>
                 <label
                   htmlFor="aco-tutor"
-                  className="block text-xs font-semibold text-slate-700 mb-1.5"
+                  className="block text-xs font-medium text-[#64748B] mb-1.5"
                 >
-                  Tutor *
+                  Tutor
                 </label>
                 <select
                   id="aco-tutor"
                   value={tutorId}
                   onChange={(e) => setTutorId(e.target.value)}
-                  className="gov-input text-xs"
+                  className="sses-input text-xs"
                 >
                   {state.tutores.map((t) => (
                     <option key={t.id} value={t.id}>
@@ -286,9 +259,9 @@ export const TutorView: React.FC = () => {
               <div>
                 <label
                   htmlFor="aco-mes"
-                  className="block text-xs font-semibold text-slate-700 mb-1.5"
+                  className="block text-xs font-medium text-[#64748B] mb-1.5"
                 >
-                  Mes del acompañamiento *
+                  Mes
                 </label>
                 <input
                   id="aco-mes"
@@ -296,53 +269,57 @@ export const TutorView: React.FC = () => {
                   required
                   value={mes}
                   onChange={(e) => setMes(e.target.value)}
-                  className="gov-input gov-mono text-xs"
+                  className="sses-input sses-mono text-xs"
                 />
               </div>
             </div>
 
             <div>
-              <span className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Modalidad *
+              <span className="block text-xs font-medium text-[#64748B] mb-1.5">
+                Modalidad
               </span>
-              <div className="grid grid-cols-2 gap-1 p-1 rounded-lg bg-[#F1F5F9] border border-[#E2E8F0]">
+              <div
+                role="group"
+                aria-label="Modalidad de acompañamiento"
+                className="grid grid-cols-2 gap-1 rounded-lg bg-[#FAFAFA] border border-[#E5E7EB] p-1"
+              >
                 <button
                   type="button"
+                  aria-pressed={modalidad === 'INDIVIDUAL'}
                   onClick={() => setModalidad('INDIVIDUAL')}
-                  className={`px-3 py-2 rounded-md text-xs font-medium transition-all duration-150 ${
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors duration-150 ${
                     modalidad === 'INDIVIDUAL'
-                      ? 'bg-men-navy text-white shadow-sm'
-                      : 'text-slate-600 hover:text-men-navy'
+                      ? 'bg-[#1E3A8A] text-white'
+                      : 'text-[#64748B] hover:text-[#0F172A]'
                   }`}
                 >
-                  Individual (1 docente)
+                  Individual
                 </button>
                 <button
                   type="button"
+                  aria-pressed={modalidad === 'GRUPAL'}
                   onClick={() => setModalidad('GRUPAL')}
-                  className={`px-3 py-2 rounded-md text-xs font-medium transition-all duration-150 ${
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors duration-150 ${
                     modalidad === 'GRUPAL'
-                      ? 'bg-men-navy text-white shadow-sm'
-                      : 'text-slate-600 hover:text-men-navy'
+                      ? 'bg-[#1E3A8A] text-white'
+                      : 'text-[#64748B] hover:text-[#0F172A]'
                   }`}
                 >
-                  Grupal (&gt;= 2 docentes)
+                  Grupal
                 </button>
               </div>
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-semibold text-slate-700">
-                  Docentes de la entidad ({docenteIds.length} seleccionado(s)) *
+                <span className="text-xs font-medium text-[#64748B]">
+                  Docentes ({docenteIds.length})
                 </span>
                 <span className="text-[11px] text-[#64748B]">
-                  {modalidad === 'INDIVIDUAL'
-                    ? 'Exactamente 1'
-                    : 'Mínimo 2 docentes'}
+                  {modalidad === 'INDIVIDUAL' ? '1 docente' : 'Mín. 2'}
                 </span>
               </div>
-              <div className="space-y-2 bg-[#F8FAFC] p-4 rounded-lg border border-[#E2E8F0]">
+              <div className="space-y-2 bg-[#FAFAFA] p-4 rounded-lg border border-[#E5E7EB]">
                 {docentesEntidad.map((doc) => {
                   const checked = docenteIds.includes(doc.id);
                   return (
@@ -355,9 +332,9 @@ export const TutorView: React.FC = () => {
                         name="docentes-seleccion"
                         checked={checked}
                         onChange={() => toggleDocente(doc.id)}
-                        className="accent-men-navy"
+                        className="accent-[#1E3A8A]"
                       />
-                      <span className="font-medium text-men-navy">
+                      <span className="font-medium text-[#0F172A]">
                         {doc.nombreCompleto}
                       </span>
                       <span className="text-[#64748B]">· {doc.area}</span>
@@ -370,69 +347,67 @@ export const TutorView: React.FC = () => {
             <div>
               <label
                 htmlFor="aco-obs"
-                className="block text-xs font-semibold text-slate-700 mb-1.5"
+                className="block text-xs font-medium text-[#64748B] mb-1.5"
               >
-                Observaciones de planeación
+                Observaciones
               </label>
               <textarea
                 id="aco-obs"
                 rows={2}
                 value={observaciones}
                 onChange={(e) => setObservaciones(e.target.value)}
-                placeholder="Objetivos pedagógicos del acompañamiento mensual..."
-                className="gov-input text-xs"
+                placeholder="Notas breves"
+                className="sses-input text-xs"
               />
             </div>
 
             {formError && (
-              <div
-                role="alert"
-                className="gov-banner-danger text-xs flex items-start gap-2"
-              >
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>{formError}</span>
+              <div role="alert" className="sses-notice-danger">
+                {formError}
               </div>
             )}
 
             {formSuccess && (
-              <div className="gov-banner-success text-xs flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>{formSuccess}</span>
+              <div role="status" className="sses-notice-success">
+                {formSuccess}
               </div>
             )}
 
             <button
               type="submit"
               disabled={isSaving}
-              className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-150 ease-in-out disabled:opacity-60 ${
+              title="Autogenera 4 semanas en estado PENDIENTE"
+              className={`w-full inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0284C7] focus-visible:ring-offset-2 disabled:opacity-50 ${
                 state.isOffline
-                  ? 'bg-[#92400E] hover:bg-amber-900 text-white'
-                  : 'gov-btn-primary'
+                  ? 'bg-[#D97706] hover:bg-[#B45309]'
+                  : 'bg-[#1E3A8A] hover:bg-[#172E6E]'
               }`}
             >
               {state.isOffline ? (
-                <CloudOff className="w-4 h-4" />
+                <CloudOff className="h-4 w-4" strokeWidth={1.5} />
               ) : (
-                <PlusCircle className="w-4 h-4" />
+                <Plus className="h-4 w-4" strokeWidth={1.5} />
               )}
               <span>
                 {isSaving
                   ? 'Guardando...'
                   : state.isOffline
-                  ? 'Guardar en Cola Offline (4 semanas PENDIENTE)'
-                  : 'Registrar Acompañamiento (4 semanas PENDIENTE)'}
+                  ? 'Guardar en cola'
+                  : 'Registrar'}
               </span>
             </button>
           </form>
         </section>
 
-        {/* Right: Accompaniments List + Weekly Follow-up Controls */}
-        <section className="lg:col-span-7 space-y-6">
+        {/* Right: Accompaniments List */}
+        <section className="lg:col-span-7 space-y-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-men-navy">
-              Acompañamientos y Seguimiento Semanal (
-              {state.acompanamientos.length})
+            <h2 className="text-sm font-medium text-[#0F172A]">
+              Seguimiento semanal
             </h2>
+            <span className="sses-mono text-xs text-[#64748B]">
+              {state.acompanamientos.length}
+            </span>
           </div>
 
           {state.acompanamientos.map((acomp) => {
@@ -443,63 +418,42 @@ export const TutorView: React.FC = () => {
               acomp.estadoSincronizacion === 'PENDIENTE_SINCRONIZACION';
 
             return (
-              <article
-                key={acomp.id}
-                className={`gov-card overflow-hidden ${
-                  isPendingSync ? 'border-l-4 border-l-[#D97706]' : ''
-                }`}
-              >
-                <div className="px-6 py-4 bg-[#F8FAFC] border-b border-[#E2E8F0] flex flex-wrap items-start justify-between gap-4">
-                  <div className="space-y-1">
+              <article key={acomp.id} className="sses-card overflow-hidden">
+                <div className="px-6 py-4 border-b border-[#E5E7EB] flex flex-wrap items-start justify-between gap-4">
+                  <div className="space-y-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="gov-mono text-xs font-semibold text-men-accent">
+                      <span className="sses-mono text-xs text-[#0284C7]">
                         {acomp.id}
                       </span>
-                      <span className="gov-pill-info">{acomp.modalidad}</span>
-                      <span className="inline-flex items-center gap-1 gov-mono text-xs text-[#64748B]">
-                        <Calendar className="w-3.5 h-3.5" />
+                      <span className="sses-mono text-xs text-[#64748B]">
                         {acomp.mes}
                       </span>
+                      <StatusBadge tone="neutral">
+                        {acomp.modalidad === 'INDIVIDUAL'
+                          ? 'Individual'
+                          : 'Grupal'}
+                      </StatusBadge>
                     </div>
-                    <h3 className="text-base font-bold text-men-navy">
+                    <h3 className="text-sm font-medium text-[#0F172A]">
                       {est?.nombre ?? acomp.estrategiaId}
                     </h3>
-                    <p className="text-xs text-[#64748B]">
-                      {ent?.nombre} · Tutor:{' '}
-                      <strong className="text-slate-800">
-                        {tutor?.nombreCompleto ?? acomp.tutorId}
-                      </strong>
-                    </p>
-                    <div className="flex items-center gap-1.5 text-xs text-[#64748B]">
-                      <Users className="w-3.5 h-3.5 shrink-0" />
-                      <span>
-                        Docentes:{' '}
-                        {acomp.docenteIds
-                          .map(
-                            (id) => docentesById.get(id)?.nombreCompleto ?? id
-                          )
-                          .join(', ')}
-                      </span>
+                    <div className="text-xs text-[#64748B]">
+                      {ent?.nombre} · {tutor?.nombreCompleto ?? acomp.tutorId} ·{' '}
+                      {acomp.docenteIds
+                        .map((id) => docentesById.get(id)?.nombreCompleto ?? id)
+                        .join(', ')}
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-end gap-1.5 shrink-0">
-                    {isPendingSync ? (
-                      <span className="gov-pill-warning">
-                        <CloudOff className="w-3.5 h-3.5" />
-                        <span>Pendiente de sincronización</span>
-                      </span>
-                    ) : (
-                      <span className="gov-pill-success">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Sincronizado</span>
-                      </span>
-                    )}
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    <StatusBadge tone={isPendingSync ? 'warning' : 'success'}>
+                      {isPendingSync ? 'Pendiente sync' : 'Sincronizado'}
+                    </StatusBadge>
                     <code
-                      className="gov-mono text-[11px] text-[#64748B]"
-                      title={acomp.idempotencyKey}
+                      className="sses-mono text-[11px] text-[#64748B]"
+                      title={`Idempotency-Key: ${acomp.idempotencyKey}`}
                     >
-                      Key: {acomp.idempotencyKey.slice(0, 20)}
+                      {acomp.idempotencyKey.slice(0, 16)}…
                     </code>
                   </div>
                 </div>
@@ -516,40 +470,33 @@ export const TutorView: React.FC = () => {
                     return (
                       <div
                         key={sem.id}
-                        className="rounded-xl border border-[#E2E8F0] p-4 space-y-3 bg-white"
+                        className="rounded-lg border border-[#E5E7EB] p-4 space-y-3 bg-white"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <div className="font-heading text-sm font-bold text-men-navy">
+                            <div className="text-sm font-medium text-[#0F172A]">
                               Semana {sem.numeroSemana}
                             </div>
-                            <div className="gov-mono text-[11px] text-[#64748B] mt-0.5">
+                            <div className="sses-mono text-[11px] text-[#64748B]">
                               {sem.fechaProgramada}
                             </div>
                           </div>
 
                           <div className="flex flex-col items-end gap-1">
                             {sem.estado === 'REALIZADO' && (
-                              <span className="gov-pill-success">
-                                <CheckCircle2 className="w-3 h-3" />
-                                REALIZADO
-                              </span>
+                              <StatusBadge tone="success">Realizado</StatusBadge>
                             )}
                             {sem.estado === 'PENDIENTE' && (
-                              <span className="gov-pill-warning">
-                                <Clock className="w-3 h-3" />
-                                PENDIENTE
-                              </span>
+                              <StatusBadge tone="warning">Pendiente</StatusBadge>
                             )}
                             {sem.estado === 'NO_REALIZADO' && (
-                              <span className="gov-pill-danger">
-                                <XCircle className="w-3 h-3" />
-                                NO REALIZADO
-                              </span>
+                              <StatusBadge tone="danger">
+                                No realizado
+                              </StatusBadge>
                             )}
                             {semPendingSync && (
-                              <span className="text-[10px] font-semibold text-[#92400E]">
-                                Pendiente de sincronización
+                              <span className="text-[10px] text-[#92400E]">
+                                Pendiente sync
                               </span>
                             )}
                           </div>
@@ -557,21 +504,21 @@ export const TutorView: React.FC = () => {
 
                         {sem.estado === 'NO_REALIZADO' &&
                           sem.motivoNoRealizado && (
-                            <div className="gov-banner-danger py-2 px-3 text-[11px]">
-                              <strong>Motivo:</strong> {sem.motivoNoRealizado}
-                            </div>
+                            <p className="text-xs text-[#991B1B] bg-[#FEF2F2] border border-[#FECACA] rounded-md px-2.5 py-1.5">
+                              {sem.motivoNoRealizado}
+                            </p>
                           )}
 
-                        {/* Action buttons */}
                         <div className="flex items-center gap-2 pt-1">
                           <button
                             type="button"
                             onClick={() =>
                               handleMarkRealizado(acomp.id, sem.id)
                             }
-                            className="flex-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-[#ECFDF5] border border-[#A7F3D0] text-[#065F46] hover:bg-emerald-100 transition-colors duration-150"
+                            aria-label={`Marcar semana ${sem.numeroSemana} como realizada`}
+                            className="flex-1 rounded-md border border-[#E5E7EB] bg-white px-2.5 py-1.5 text-xs font-medium text-[#0F172A] hover:border-[#059669] hover:text-[#059669] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0284C7]"
                           >
-                            Marcar REALIZADO
+                            Realizado
                           </button>
                           <button
                             type="button"
@@ -585,42 +532,41 @@ export const TutorView: React.FC = () => {
                                 [sem.id]: '',
                               }));
                             }}
-                            className="flex-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-[#FEF2F2] border border-[#FECACA] text-[#991B1B] hover:bg-red-100 transition-colors duration-150"
+                            aria-label={`Marcar semana ${sem.numeroSemana} como no realizada`}
+                            className="flex-1 rounded-md border border-[#E5E7EB] bg-white px-2.5 py-1.5 text-xs font-medium text-[#64748B] hover:border-[#DC2626] hover:text-[#DC2626] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0284C7]"
                           >
-                            NO_REALIZADO
+                            No realizado
                           </button>
                         </div>
 
                         {isEditingNoRealizado && (
-                          <div className="pt-3 border-t border-[#E2E8F0] space-y-2.5">
-                            <label className="block text-[11px] font-semibold text-slate-700">
-                              Motivo obligatorio (mínimo 10 caracteres útiles):
-                            </label>
+                          <div className="pt-3 border-t border-[#E5E7EB] space-y-2">
                             <textarea
                               rows={2}
+                              aria-label="Motivo de no realización"
                               value={motivoDraft}
                               onChange={(e) => setMotivoDraft(e.target.value)}
-                              placeholder="Explique la causa de no realización..."
-                              className="gov-input text-xs"
+                              placeholder="Motivo (mín. 10 caracteres)"
+                              className="sses-input text-xs"
                             />
-                            <div className="flex items-center justify-between text-[11px]">
+                            <div className="flex items-center justify-between text-xs">
                               <span
-                                className={`gov-mono font-medium ${
+                                className={`sses-mono ${
                                   trimmedLen >= 10
-                                    ? 'text-[#065F46]'
-                                    : 'text-[#92400E]'
+                                    ? 'text-[#059669]'
+                                    : 'text-[#64748B]'
                                 }`}
                               >
-                                {trimmedLen} / 10 caracteres útiles
+                                {trimmedLen}/10
                               </span>
                               <button
                                 type="button"
                                 onClick={() =>
                                   handleSaveNoRealizado(acomp.id, sem.id)
                                 }
-                                className="px-3 py-1.5 rounded-lg bg-[#991B1B] hover:bg-red-900 text-white font-semibold transition-colors duration-150"
+                                className="rounded-md bg-[#DC2626] px-3 py-1 text-xs font-medium text-white hover:bg-[#B91C1C] transition-colors"
                               >
-                                Guardar motivo
+                                Guardar
                               </button>
                             </div>
                           </div>
@@ -629,7 +575,7 @@ export const TutorView: React.FC = () => {
                         {weekError[sem.id] && (
                           <div
                             role="alert"
-                            className="gov-banner-danger py-2 px-3 text-[11px]"
+                            className="sses-notice-danger py-2 px-3"
                           >
                             {weekError[sem.id]}
                           </div>

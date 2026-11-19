@@ -1,14 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import {
-  AlertCircle,
-  CheckCircle2,
   Download,
   Edit3,
+  Info,
   Lock,
-  PlusCircle,
+  Plus,
   Search,
   UserPlus,
-  Users,
   X,
 } from 'lucide-react';
 import { useSses } from '../../context/SsesContext';
@@ -20,6 +18,7 @@ import {
 } from '../../utils/businessRules';
 import { KpiDashboard } from '../common/KpiDashboard';
 import { ReportReceiptCard } from '../common/ReportReceiptCard';
+import { StatusBadge } from '../common/StatusBadge';
 
 export const FuncionarioMenView: React.FC = () => {
   const {
@@ -139,9 +138,7 @@ export const FuncionarioMenView: React.FC = () => {
       setDescripcion('');
       setSelectedStrategyId(res.data.id);
       setLastLinkResult(null);
-      setCreateSuccess(
-        `Estrategia ${res.data.id} creada en estado SIN_ESTUDIANTES y registrada en auditoría.`
-      );
+      setCreateSuccess(`Creada · ${res.data.id}`);
     } finally {
       setIsCreating(false);
     }
@@ -167,9 +164,7 @@ export const FuncionarioMenView: React.FC = () => {
     }
 
     setEditingId(null);
-    setEditSuccess(
-      `Estrategia ${res.data.id} actualizada exitosamente y auditada.`
-    );
+    setEditSuccess(`Actualizada · ${res.data.id}`);
   };
 
   const handleLinkSingle = async (numeroDocumento: string) => {
@@ -200,9 +195,7 @@ export const FuncionarioMenView: React.FC = () => {
 
     const docs = parsearDocumentosMasivos(bulkText);
     if (docs.length === 0) {
-      setLinkError(
-        'Pegue al menos un número de documento separado por saltos de línea, comas o punto y coma.'
-      );
+      setLinkError('Ingrese al menos un documento.');
       return;
     }
 
@@ -260,47 +253,40 @@ export const FuncionarioMenView: React.FC = () => {
   }, [selectedStrategy, state.estudiantes]);
 
   return (
-    <div className="space-y-6">
-      {/* Editorial Role Header + Primary Export CTA */}
-      <header className="gov-card p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div className="space-y-1.5">
-          <span className="gov-pill-info">Perfil 1 · Funcionario MEN</span>
-          <h1 className="text-2xl font-bold text-men-navy">
-            Gestión de Estrategias Estudiantiles y Cumplimiento
+    <div className="space-y-8">
+      {/* Minimal View Header */}
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-semibold tracking-[-0.025em] text-[#0F172A]">
+            Estrategias
           </h1>
-          <p className="text-sm text-slate-600 max-w-2xl">
-            Cree estrategias en entidades educativas activas, administre la
-            vinculación de estudiantes bajo la regla de inmutabilidad y
-            descargue reportes CSV con constancia SHA-256.
-          </p>
+          <StatusBadge tone="info">Funcionario MEN</StatusBadge>
         </div>
+
         <button
           type="button"
           onClick={handleDownloadCsv}
           disabled={isExporting}
-          className="gov-btn-primary shrink-0"
+          aria-label="Descargar reporte CSV con constancia SHA-256"
+          title="Exportar reporte CSV con huella SHA-256"
+          className="sses-btn-primary"
         >
-          <Download className="w-4 h-4" />
-          <span>
-            {isExporting
-              ? 'Generando CSV...'
-              : 'Descargar Reporte CSV (SHA-256)'}
-          </span>
+          <Download className="h-4 w-4" strokeWidth={1.5} />
+          <span>{isExporting ? 'Generando...' : 'Exportar CSV'}</span>
         </button>
       </header>
 
-      {/* KPIs + Alerts + Latest Receipt */}
+      {/* KPIs + Latest Receipt */}
       <KpiDashboard kpis={kpis} />
       <ReportReceiptCard constancias={constanciasMen} />
 
-      {/* Main 12-Col Grid: Create Strategy + Strategies List & Linking */}
+      {/* Main 12-Col Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left column: Create Strategy Form */}
-        <section className="lg:col-span-5 gov-card overflow-hidden">
-          <div className="px-6 py-4 bg-[#F1F5F9] border-b border-[#E2E8F0] flex items-center gap-2.5">
-            <PlusCircle className="w-4 h-4 text-men-navy" />
-            <h2 className="text-sm font-bold text-men-navy">
-              Crear Nueva Estrategia
+        {/* Left: Create Strategy Form */}
+        <section className="lg:col-span-5 sses-card overflow-hidden">
+          <div className="px-6 py-4 border-b border-[#E5E7EB]">
+            <h2 className="text-sm font-medium text-[#0F172A]">
+              Nueva estrategia
             </h2>
           </div>
 
@@ -308,9 +294,9 @@ export const FuncionarioMenView: React.FC = () => {
             <div>
               <label
                 htmlFor="str-nombre"
-                className="block text-xs font-semibold text-slate-700 mb-1.5"
+                className="block text-xs font-medium text-[#64748B] mb-1.5"
               >
-                Nombre de la estrategia *
+                Nombre
               </label>
               <input
                 id="str-nombre"
@@ -318,40 +304,49 @@ export const FuncionarioMenView: React.FC = () => {
                 required
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
-                placeholder="Ej. Plan de Nivelación en Ciencias Básicas"
-                className="gov-input"
+                placeholder="Plan de nivelación"
+                className="sses-input"
               />
             </div>
 
             <div>
               <label
                 htmlFor="str-descripcion"
-                className="block text-xs font-semibold text-slate-700 mb-1.5"
+                className="block text-xs font-medium text-[#64748B] mb-1.5"
               >
-                Descripción / Alcance pedagógico
+                Descripción
               </label>
               <textarea
                 id="str-descripcion"
                 rows={2}
                 value={descripcion}
                 onChange={(e) => setDescripcion(e.target.value)}
-                placeholder="Objetivo de la estrategia en la institución educativa..."
-                className="gov-input"
+                placeholder="Alcance pedagógico"
+                className="sses-input"
               />
             </div>
 
             <div>
-              <label
-                htmlFor="str-entidad"
-                className="block text-xs font-semibold text-slate-700 mb-1.5"
-              >
-                Entidad Educativa (solo estado ACTIVA) *
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label
+                  htmlFor="str-entidad"
+                  className="text-xs font-medium text-[#64748B]"
+                >
+                  Entidad educativa
+                </label>
+                <span
+                  title="Regla FR-006: Solo se permiten entidades en estado ACTIVA."
+                  className="inline-flex items-center gap-1 text-[11px] text-[#64748B] cursor-help"
+                >
+                  <Info className="h-3 w-3" strokeWidth={1.5} />
+                  <span>Solo activas</span>
+                </span>
+              </div>
               <select
                 id="str-entidad"
                 value={entidadId}
                 onChange={(e) => setEntidadId(e.target.value)}
-                className="gov-input"
+                className="sses-input"
               >
                 {state.entidades.map((ent) => (
                   <option
@@ -359,26 +354,20 @@ export const FuncionarioMenView: React.FC = () => {
                     value={ent.id}
                     disabled={ent.estado !== 'ACTIVA'}
                   >
-                    {ent.nombre} ({ent.municipio}) —{' '}
-                    {ent.estado === 'ACTIVA'
-                      ? 'ACTIVA'
-                      : 'INACTIVA (No seleccionable)'}
+                    {ent.nombre} · {ent.municipio}
+                    {ent.estado !== 'ACTIVA' ? ' (Inactiva)' : ''}
                   </option>
                 ))}
               </select>
-              <p className="text-[11px] text-[#64748B] mt-1.5">
-                Regla FR-006: Las entidades inactivas (ej. Tunja) están
-                bloqueadas para nuevas estrategias.
-              </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label
                   htmlFor="str-inicio"
-                  className="block text-xs font-semibold text-slate-700 mb-1.5"
+                  className="block text-xs font-medium text-[#64748B] mb-1.5"
                 >
-                  Fecha de inicio *
+                  Inicio
                 </label>
                 <input
                   id="str-inicio"
@@ -386,15 +375,15 @@ export const FuncionarioMenView: React.FC = () => {
                   required
                   value={fechaInicio}
                   onChange={(e) => setFechaInicio(e.target.value)}
-                  className="gov-input gov-mono text-xs"
+                  className="sses-input sses-mono text-xs"
                 />
               </div>
               <div>
                 <label
                   htmlFor="str-fin"
-                  className="block text-xs font-semibold text-slate-700 mb-1.5"
+                  className="block text-xs font-medium text-[#64748B] mb-1.5"
                 >
-                  Fecha de fin *
+                  Fin
                 </label>
                 <input
                   id="str-fin"
@@ -402,65 +391,56 @@ export const FuncionarioMenView: React.FC = () => {
                   required
                   value={fechaFin}
                   onChange={(e) => setFechaFin(e.target.value)}
-                  className="gov-input gov-mono text-xs"
+                  className="sses-input sses-mono text-xs"
                 />
               </div>
             </div>
 
             {createError && (
-              <div
-                role="alert"
-                className="gov-banner-danger text-xs flex items-start gap-2.5"
-              >
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>{createError}</span>
+              <div role="alert" className="sses-notice-danger">
+                {createError}
               </div>
             )}
 
             {createSuccess && (
-              <div className="gov-banner-success text-xs flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>{createSuccess}</span>
+              <div role="status" className="sses-notice-success">
+                {createSuccess}
               </div>
             )}
 
             <button
               type="submit"
               disabled={isCreating}
-              className="gov-btn-primary w-full"
+              className="sses-btn-primary w-full"
             >
-              <PlusCircle className="w-4 h-4" />
-              <span>
-                {isCreating
-                  ? 'Guardando estrategia...'
-                  : 'Crear Estrategia (SIN_ESTUDIANTES)'}
-              </span>
+              <Plus className="h-4 w-4" strokeWidth={1.5} />
+              <span>{isCreating ? 'Guardando...' : 'Crear estrategia'}</span>
             </button>
           </form>
         </section>
 
-        {/* Right column: Strategies list + Edit + Student Linking */}
+        {/* Right: Strategies Table + Detail & Linking */}
         <section className="lg:col-span-7 space-y-6">
-          {/* Strategies List Card */}
-          <div className="gov-card overflow-hidden">
-            <div className="px-6 py-4 bg-[#F1F5F9] border-b border-[#E2E8F0] flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-xs font-semibold uppercase tracking-[0.05em] text-[#64748B]">
-                Estrategias Registradas ({state.estrategias.length})
+          <div className="sses-card overflow-hidden">
+            <div className="px-6 py-4 border-b border-[#E5E7EB] flex items-center justify-between gap-2">
+              <h2 className="text-sm font-medium text-[#0F172A]">
+                Registradas
               </h2>
-              <span className="text-xs text-[#64748B]">
-                Seleccione una fila para gestionar
+              <span className="sses-mono text-xs text-[#64748B]">
+                {state.estrategias.length}
               </span>
             </div>
 
-            <div className="divide-y divide-[#E2E8F0]">
+            <div className="divide-y divide-[#E5E7EB]">
               {state.estrategias.map((est) => {
                 const ent = entidadesById.get(est.entidadId);
                 const isSelected = selectedStrategy?.id === est.id;
                 const editable = puedeEditarEstrategia(est);
 
                 return (
-                  <div
+                  <button
                     key={est.id}
+                    type="button"
                     onClick={() => {
                       setSelectedStrategyId(est.id);
                       setLastLinkResult(null);
@@ -471,149 +451,153 @@ export const FuncionarioMenView: React.FC = () => {
                         setEditingId(null);
                       }
                     }}
-                    className={`px-6 py-4 cursor-pointer transition-colors duration-150 ${
+                    aria-pressed={isSelected}
+                    className={`w-full text-left px-6 py-4 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0284C7] ${
                       isSelected
-                        ? 'bg-sky-50/60 border-l-4 border-l-men-accent'
-                        : 'hover:bg-[#F8FAFC] border-l-4 border-l-transparent'
+                        ? 'bg-[#F0F9FF]/70 border-l-2 border-l-[#0284C7]'
+                        : 'hover:bg-[#FAFAFA] border-l-2 border-l-transparent'
                     }`}
                   >
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="space-y-1 min-w-0">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="min-w-0 space-y-0.5">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="gov-mono text-xs font-semibold text-men-accent">
+                          <span className="sses-mono text-xs text-[#0284C7]">
                             {est.id}
                           </span>
-                          <h3 className="text-sm font-bold text-men-navy">
+                          <span className="text-sm font-medium text-[#0F172A] truncate">
                             {est.nombre}
-                          </h3>
+                          </span>
                         </div>
-                        <p className="text-xs text-[#64748B]">
-                          {ent?.nombre ?? est.entidadId} · {ent?.municipio} ·{' '}
-                          <span className="gov-mono">
+                        <div className="text-xs text-[#64748B]">
+                          {ent?.nombre ?? est.entidadId} ·{' '}
+                          <span className="sses-mono">
                             {est.fechaInicio} → {est.fechaFin}
                           </span>
-                        </p>
+                        </div>
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0">
-                        <span
-                          className={
-                            editable ? 'gov-pill-info' : 'gov-pill-danger'
+                        <StatusBadge
+                          tone={editable ? 'info' : 'danger'}
+                          title={
+                            editable
+                              ? 'SIN_ESTUDIANTES: Editable'
+                              : 'CON_ESTUDIANTES: Edición bloqueada'
                           }
                         >
-                          {!editable && <Lock className="w-3 h-3" />}
-                          <span>{est.estado}</span>
-                        </span>
-                        <span className="gov-pill-neutral gov-mono">
-                          <Users className="w-3 h-3 text-men-navy" />
-                          {est.estudianteIds.length}
+                          {editable ? 'Editable' : 'Bloqueada'}
+                        </StatusBadge>
+                        <span
+                          title="Estudiantes vinculados"
+                          className="sses-mono text-xs text-[#64748B] min-w-[2rem] text-right"
+                        >
+                          {est.estudianteIds.length} est.
                         </span>
                       </div>
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
           </div>
 
-          {/* Selected Strategy Detail, Immutability Banner, Edit Form & Linking Panel */}
+          {/* Selected Strategy Detail & Linking */}
           {selectedStrategy && (
-            <div className="gov-card p-6 space-y-6">
-              <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#E2E8F0] pb-4">
-                <div className="space-y-1">
-                  <div className="gov-mono text-xs text-[#64748B]">
+            <div className="sses-card p-6 space-y-6">
+              <div className="flex flex-wrap items-start justify-between gap-4 pb-4 border-b border-[#E5E7EB]">
+                <div className="space-y-1 min-w-0">
+                  <div className="sses-mono text-xs text-[#64748B]">
                     {selectedStrategy.id} ·{' '}
                     {entidadesById.get(selectedStrategy.entidadId)?.nombre}
                   </div>
-                  <h3 className="text-lg font-bold text-men-navy">
+                  <h3 className="text-base font-medium text-[#0F172A]">
                     {selectedStrategy.nombre}
                   </h3>
-                  <p className="text-xs text-slate-600">
-                    {selectedStrategy.descripcion ||
-                      'Sin descripción registrada.'}
-                  </p>
+                  {selectedStrategy.descripcion && (
+                    <p className="text-xs text-[#64748B]">
+                      {selectedStrategy.descripcion}
+                    </p>
+                  )}
                 </div>
 
                 <button
                   type="button"
                   disabled={!puedeEditarEstrategia(selectedStrategy)}
                   onClick={() => startEdit(selectedStrategy)}
-                  className={
+                  aria-label={
                     puedeEditarEstrategia(selectedStrategy)
-                      ? 'gov-btn-secondary text-xs'
-                      : 'inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-[#F1F5F9] text-slate-400 border border-[#E2E8F0] cursor-not-allowed'
+                      ? 'Editar estrategia'
+                      : 'Edición bloqueada por inmutabilidad'
                   }
+                  title={
+                    puedeEditarEstrategia(selectedStrategy)
+                      ? 'Editar datos base'
+                      : 'Inmutable: cuenta con estudiantes vinculados'
+                  }
+                  className="sses-btn-secondary text-xs shrink-0"
                 >
                   {puedeEditarEstrategia(selectedStrategy) ? (
                     <>
-                      <Edit3 className="w-3.5 h-3.5" />
-                      <span>Editar datos base</span>
+                      <Edit3 className="h-3.5 w-3.5" strokeWidth={1.5} />
+                      <span>Editar</span>
                     </>
                   ) : (
                     <>
-                      <Lock className="w-3.5 h-3.5" />
-                      <span>Edición bloqueada</span>
+                      <Lock className="h-3.5 w-3.5" strokeWidth={1.5} />
+                      <span>Bloqueada</span>
                     </>
                   )}
                 </button>
               </div>
 
-              {/* Immutability Explanatory Banner (4px Left Semantic Accent Bar — FR-011) */}
               {!puedeEditarEstrategia(selectedStrategy) && (
                 <div
                   role="status"
-                  className="gov-banner-danger flex items-start gap-3"
+                  title="Por normativa SSES, al vincular estudiantes la edición de datos base queda bloqueada permanentemente."
+                  className="sses-notice-danger flex items-center justify-between gap-3"
                 >
-                  <Lock className="w-4 h-4 shrink-0 mt-0.5 text-[#991B1B]" />
-                  <div className="text-xs space-y-1">
-                    <div className="font-heading font-bold text-sm text-[#991B1B]">
-                      Regla de Inmutabilidad Activa — Estado CON_ESTUDIANTES
-                    </div>
-                    <p className="leading-relaxed">
-                      Esta estrategia cuenta con{' '}
-                      <strong className="gov-mono">
-                        {selectedStrategy.estudianteIds.length} estudiante(s)
-                        vinculado(s)
-                      </strong>
-                      . Por normativa del SSES, la edición de los datos base
-                      (nombre, descripción, entidad educativa y fechas) ha
-                      quedado <strong>bloqueada permanentemente</strong>. Puede
-                      continuar vinculando estudiantes adicionales de la misma
-                      entidad educativa.
-                    </p>
-                  </div>
+                  <span className="flex items-center gap-2">
+                    <Lock className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
+                    <span>
+                      Inmutable ({selectedStrategy.estado}) ·{' '}
+                      <span className="sses-mono">
+                        {selectedStrategy.estudianteIds.length}
+                      </span>{' '}
+                      vinculados
+                    </span>
+                  </span>
                 </div>
               )}
 
               {editSuccess && (
-                <div className="gov-banner-success text-xs flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 shrink-0" />
-                  <span>{editSuccess}</span>
+                <div role="status" className="sses-notice-success">
+                  {editSuccess}
                 </div>
               )}
 
-              {/* Inline Edit Form (only while SIN_ESTUDIANTES) */}
+              {/* Inline Edit Form */}
               {editingId === selectedStrategy.id &&
                 puedeEditarEstrategia(selectedStrategy) && (
                   <form
                     onSubmit={handleSaveEdit}
-                    className="p-4 rounded-xl bg-[#F8FAFC] border border-sky-200 space-y-4"
+                    className="p-4 rounded-xl bg-[#FAFAFA] border border-[#E5E7EB] space-y-4"
                   >
                     <div className="flex items-center justify-between">
-                      <h4 className="text-xs font-bold uppercase tracking-[0.05em] text-men-navy">
-                        Editar Estrategia ({selectedStrategy.id})
-                      </h4>
+                      <span className="text-xs font-medium text-[#0F172A]">
+                        Editar · {selectedStrategy.id}
+                      </span>
                       <button
                         type="button"
                         onClick={() => setEditingId(null)}
-                        className="text-slate-400 hover:text-slate-600 transition-colors"
+                        aria-label="Cerrar edición"
+                        className="text-[#64748B] hover:text-[#0F172A] rounded"
                       >
-                        <X className="w-4 h-4" />
+                        <X className="h-4 w-4" strokeWidth={1.5} />
                       </button>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      <label className="block text-xs font-medium text-[#64748B] mb-1">
                         Nombre
                       </label>
                       <input
@@ -621,31 +605,31 @@ export const FuncionarioMenView: React.FC = () => {
                         required
                         value={editNombre}
                         onChange={(e) => setEditNombre(e.target.value)}
-                        className="gov-input"
+                        className="sses-input"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      <label className="block text-xs font-medium text-[#64748B] mb-1">
                         Descripción
                       </label>
                       <textarea
                         rows={2}
                         value={editDescripcion}
                         onChange={(e) => setEditDescripcion(e.target.value)}
-                        className="gov-input"
+                        className="sses-input"
                       />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1">
-                          Entidad (ACTIVA)
+                        <label className="block text-xs font-medium text-[#64748B] mb-1">
+                          Entidad
                         </label>
                         <select
                           value={editEntidadId}
                           onChange={(e) => setEditEntidadId(e.target.value)}
-                          className="gov-input text-xs"
+                          className="sses-input text-xs"
                         >
                           {state.entidades.map((ent) => (
                             <option
@@ -653,39 +637,39 @@ export const FuncionarioMenView: React.FC = () => {
                               value={ent.id}
                               disabled={ent.estado !== 'ACTIVA'}
                             >
-                              {ent.nombre} ({ent.estado})
+                              {ent.nombre}
                             </option>
                           ))}
                         </select>
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1">
-                          Fecha inicio
+                        <label className="block text-xs font-medium text-[#64748B] mb-1">
+                          Inicio
                         </label>
                         <input
                           type="date"
                           required
                           value={editFechaInicio}
                           onChange={(e) => setEditFechaInicio(e.target.value)}
-                          className="gov-input gov-mono text-xs"
+                          className="sses-input sses-mono text-xs"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1">
-                          Fecha fin
+                        <label className="block text-xs font-medium text-[#64748B] mb-1">
+                          Fin
                         </label>
                         <input
                           type="date"
                           required
                           value={editFechaFin}
                           onChange={(e) => setEditFechaFin(e.target.value)}
-                          className="gov-input gov-mono text-xs"
+                          className="sses-input sses-mono text-xs"
                         />
                       </div>
                     </div>
 
                     {editError && (
-                      <div className="gov-banner-danger text-xs">
+                      <div role="alert" className="sses-notice-danger">
                         {editError}
                       </div>
                     )}
@@ -694,54 +678,51 @@ export const FuncionarioMenView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setEditingId(null)}
-                        className="gov-btn-secondary text-xs"
+                        className="sses-btn-secondary text-xs"
                       >
                         Cancelar
                       </button>
-                      <button type="submit" className="gov-btn-accent text-xs">
-                        Guardar cambios
+                      <button type="submit" className="sses-btn-primary text-xs">
+                        Guardar
                       </button>
                     </div>
                   </form>
                 )}
 
-              {/* Currently Linked Students */}
+              {/* Linked Students */}
               <div className="space-y-3">
-                <h4 className="text-xs font-semibold uppercase tracking-[0.05em] text-[#64748B]">
-                  Estudiantes Vinculados ({selectedStrategy.estudianteIds.length}
-                  )
-                </h4>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-[#64748B]">
+                    Estudiantes vinculados
+                  </span>
+                  <span className="sses-mono text-xs text-[#64748B]">
+                    {selectedStrategy.estudianteIds.length}
+                  </span>
+                </div>
+
                 {selectedStrategy.estudianteIds.length === 0 ? (
-                  <p className="text-xs text-[#64748B] bg-[#F8FAFC] p-4 rounded-lg border border-[#E2E8F0]">
-                    No hay estudiantes vinculados todavía. Vincule al menos 1
-                    estudiante de esta entidad para activar el estado{' '}
-                    <code className="gov-mono text-men-navy">
-                      CON_ESTUDIANTES
-                    </code>
-                    .
-                  </p>
+                  <div className="text-xs text-[#64748B] bg-[#FAFAFA] px-4 py-3 rounded-lg border border-[#E5E7EB]">
+                    Sin estudiantes vinculados
+                  </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {selectedStrategy.estudianteIds.map((id) => {
                       const est = estudiantesById.get(id);
                       if (!est) return null;
                       return (
                         <div
                           key={id}
-                          className="flex items-center justify-between px-4 py-3 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] text-xs"
+                          className="flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-[#FAFAFA] border border-[#E5E7EB] text-xs"
                         >
                           <div className="min-w-0">
-                            <div className="font-medium text-men-navy truncate">
+                            <div className="font-medium text-[#0F172A] truncate">
                               {est.nombreCompleto}
                             </div>
-                            <div className="gov-mono text-[#64748B] text-[11px] mt-0.5">
-                              {est.tipoDocumento} {est.numeroDocumento} · Grado{' '}
+                            <div className="sses-mono text-[#64748B] text-[11px]">
+                              {est.tipoDocumento} {est.numeroDocumento} ·{' '}
                               {est.grado}
                             </div>
                           </div>
-                          <span className="gov-pill-success shrink-0 ml-2">
-                            Vinculado
-                          </span>
                         </div>
                       );
                     })}
@@ -749,35 +730,42 @@ export const FuncionarioMenView: React.FC = () => {
                 )}
               </div>
 
-              {/* Student Linking Panel: Segmented Individual & Bulk Tabs */}
-              <div className="border-t border-[#E2E8F0] pt-6 space-y-4">
+              {/* Linking Panel */}
+              <div className="border-t border-[#E5E7EB] pt-6 space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-2 text-sm font-heading font-bold text-men-navy">
-                    <UserPlus className="w-4 h-4 text-men-accent" />
-                    <span>Vincular Estudiantes (Misma Entidad)</span>
-                  </div>
-                  <div className="inline-flex rounded-lg bg-[#F1F5F9] border border-[#E2E8F0] p-1 text-xs font-medium">
+                  <span className="text-sm font-medium text-[#0F172A]">
+                    Vincular estudiantes
+                  </span>
+                  <div
+                    role="tablist"
+                    aria-label="Modo de vinculación"
+                    className="inline-flex rounded-lg bg-[#FAFAFA] border border-[#E5E7EB] p-0.5 text-xs"
+                  >
                     <button
                       type="button"
+                      role="tab"
+                      aria-selected={linkTab === 'INDIVIDUAL'}
                       onClick={() => setLinkTab('INDIVIDUAL')}
-                      className={`px-3 py-1 rounded-md transition-all duration-150 ${
+                      className={`px-3 py-1 rounded-md font-medium transition-colors duration-150 ${
                         linkTab === 'INDIVIDUAL'
-                          ? 'bg-men-navy text-white shadow-sm'
-                          : 'text-slate-600 hover:text-men-navy'
+                          ? 'bg-[#1E3A8A] text-white'
+                          : 'text-[#64748B] hover:text-[#0F172A]'
                       }`}
                     >
-                      Búsqueda Individual
+                      Individual
                     </button>
                     <button
                       type="button"
+                      role="tab"
+                      aria-selected={linkTab === 'MASIVA'}
                       onClick={() => setLinkTab('MASIVA')}
-                      className={`px-3 py-1 rounded-md transition-all duration-150 ${
+                      className={`px-3 py-1 rounded-md font-medium transition-colors duration-150 ${
                         linkTab === 'MASIVA'
-                          ? 'bg-men-navy text-white shadow-sm'
-                          : 'text-slate-600 hover:text-men-navy'
+                          ? 'bg-[#1E3A8A] text-white'
+                          : 'text-[#64748B] hover:text-[#0F172A]'
                       }`}
                     >
-                      Carga Masiva (Documentos)
+                      Masiva
                     </button>
                   </div>
                 </div>
@@ -785,35 +773,39 @@ export const FuncionarioMenView: React.FC = () => {
                 {linkTab === 'INDIVIDUAL' ? (
                   <div className="space-y-3">
                     <div className="relative">
-                      <Search className="w-4 h-4 text-[#64748B] absolute left-3 top-2.5" />
+                      <Search
+                        aria-hidden="true"
+                        className="h-3.5 w-3.5 text-[#64748B] absolute left-3 top-2.5"
+                        strokeWidth={1.5}
+                      />
                       <input
                         type="text"
+                        aria-label="Buscar estudiante"
                         value={studentQuery}
                         onChange={(e) => setStudentQuery(e.target.value)}
-                        placeholder="Buscar por nombre o número de documento en esta entidad..."
-                        className="gov-input pl-9 text-xs"
+                        placeholder="Buscar nombre o documento"
+                        className="sses-input pl-9 text-xs"
                       />
                     </div>
 
                     {availableStudentsForSelected.length === 0 ? (
-                      <p className="text-xs text-[#64748B] p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg">
-                        No hay más estudiantes disponibles sin vincular en{' '}
-                        {entidadesById.get(selectedStrategy.entidadId)?.nombre}.
-                      </p>
+                      <div className="text-xs text-[#64748B] px-4 py-3 bg-[#FAFAFA] border border-[#E5E7EB] rounded-lg">
+                        Sin estudiantes disponibles
+                      </div>
                     ) : (
-                      <div className="space-y-2 max-h-56 overflow-y-auto">
+                      <div className="divide-y divide-[#E5E7EB] border border-[#E5E7EB] rounded-lg max-h-56 overflow-y-auto">
                         {availableStudentsForSelected.map((est) => (
                           <div
                             key={est.id}
-                            className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg border border-[#E2E8F0] bg-white hover:bg-[#F8FAFC] transition-colors text-xs"
+                            className="flex items-center justify-between gap-3 px-4 py-2.5 bg-white hover:bg-[#FAFAFA] transition-colors text-xs"
                           >
-                            <div>
-                              <div className="font-medium text-men-navy">
+                            <div className="min-w-0">
+                              <div className="font-medium text-[#0F172A] truncate">
                                 {est.nombreCompleto}
                               </div>
-                              <div className="gov-mono text-[#64748B] text-[11px] mt-0.5">
-                                {est.tipoDocumento} {est.numeroDocumento} ·
-                                Grado {est.grado}
+                              <div className="sses-mono text-[#64748B] text-[11px]">
+                                {est.tipoDocumento} {est.numeroDocumento} ·{' '}
+                                {est.grado}
                               </div>
                             </div>
                             <button
@@ -822,7 +814,8 @@ export const FuncionarioMenView: React.FC = () => {
                               onClick={() =>
                                 handleLinkSingle(est.numeroDocumento)
                               }
-                              className="gov-btn-accent px-3 py-1.5 text-xs shrink-0"
+                              aria-label={`Vincular a ${est.nombreCompleto}`}
+                              className="sses-btn-secondary px-2.5 py-1 text-xs shrink-0"
                             >
                               Vincular
                             </button>
@@ -833,92 +826,90 @@ export const FuncionarioMenView: React.FC = () => {
                   </div>
                 ) : (
                   <form onSubmit={handleLinkBulk} className="space-y-3">
-                    <div className="text-xs text-slate-600">
-                      Pegue números de documento separados por saltos de línea,
-                      comas o punto y coma. Documentos de esta entidad para
-                      prueba rápida:{' '}
-                      <code className="gov-mono bg-[#F1F5F9] border border-[#E2E8F0] px-2 py-0.5 rounded text-men-navy">
-                        {sampleEntityDocs || 'Sin estudiantes en entidad'}
-                      </code>
-                    </div>
+                    {sampleEntityDocs && (
+                      <div className="text-xs text-[#64748B] flex flex-wrap items-center gap-1.5">
+                        <span>Disponibles:</span>
+                        <code className="sses-mono text-[11px] text-[#0F172A] bg-[#FAFAFA] border border-[#E5E7EB] px-2 py-0.5 rounded">
+                          {sampleEntityDocs}
+                        </code>
+                      </div>
+                    )}
                     <textarea
                       rows={3}
+                      aria-label="Documentos para carga masiva"
                       value={bulkText}
                       onChange={(e) => setBulkText(e.target.value)}
-                      placeholder="Ej: 1144087311, 1144087312, 1020304821, 9999999999"
-                      className="gov-input gov-mono text-xs"
+                      placeholder="1144087311, 1144087312"
+                      className="sses-input sses-mono text-xs"
                     />
                     <button
                       type="submit"
                       disabled={isLinking}
-                      className="gov-btn-accent text-xs"
+                      className="sses-btn-primary text-xs"
                     >
-                      <UserPlus className="w-3.5 h-3.5" />
+                      <UserPlus className="h-3.5 w-3.5" strokeWidth={1.5} />
                       <span>
-                        {isLinking
-                          ? 'Procesando carga...'
-                          : 'Procesar carga masiva'}
+                        {isLinking ? 'Procesando...' : 'Vincular lista'}
                       </span>
                     </button>
                   </form>
                 )}
 
                 {linkError && (
-                  <div className="gov-banner-danger text-xs">{linkError}</div>
+                  <div role="alert" className="sses-notice-danger">
+                    {linkError}
+                  </div>
                 )}
 
                 {lastLinkResult && (
-                  <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-xs space-y-3">
-                    <div className="font-heading font-bold text-men-navy">
-                      Resumen de Vinculación de Estudiantes
-                    </div>
+                  <div className="p-4 rounded-lg bg-[#FAFAFA] border border-[#E5E7EB] text-xs space-y-3">
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      <div className="p-3 rounded-lg bg-[#ECFDF5] border border-[#A7F3D0] text-[#065F46]">
-                        <div className="gov-mono font-bold text-lg">
+                      <div className="p-2.5 rounded-lg bg-white border border-[#E5E7EB]">
+                        <div className="sses-kpi-value text-lg text-[#059669]">
                           {lastLinkResult.vinculados.length}
                         </div>
-                        <div className="font-medium">Vinculados</div>
+                        <div className="text-[#64748B]">Vinculados</div>
                       </div>
-                      <div className="p-3 rounded-lg bg-[#F1F5F9] border border-[#E2E8F0] text-slate-700">
-                        <div className="gov-mono font-bold text-lg">
+                      <div className="p-2.5 rounded-lg bg-white border border-[#E5E7EB]">
+                        <div className="sses-kpi-value text-lg text-[#0F172A]">
                           {lastLinkResult.yaVinculados.length}
                         </div>
-                        <div className="font-medium">Duplicados</div>
+                        <div className="text-[#64748B]">Duplicados</div>
                       </div>
-                      <div className="p-3 rounded-lg bg-[#FEF2F2] border border-[#FECACA] text-[#991B1B]">
-                        <div className="gov-mono font-bold text-lg">
+                      <div className="p-2.5 rounded-lg bg-white border border-[#E5E7EB]">
+                        <div className="sses-kpi-value text-lg text-[#DC2626]">
                           {lastLinkResult.otraEntidad.length}
                         </div>
-                        <div className="font-medium">Otra entidad</div>
+                        <div className="text-[#64748B]">Otra entidad</div>
                       </div>
-                      <div className="p-3 rounded-lg bg-[#FFFBEB] border border-[#FDE68A] text-[#92400E]">
-                        <div className="gov-mono font-bold text-lg">
+                      <div className="p-2.5 rounded-lg bg-white border border-[#E5E7EB]">
+                        <div className="sses-kpi-value text-lg text-[#D97706]">
                           {lastLinkResult.noEncontrados.length}
                         </div>
-                        <div className="font-medium">No encontrados</div>
+                        <div className="text-[#64748B]">No hallados</div>
                       </div>
                     </div>
 
                     {lastLinkResult.otraEntidad.length > 0 && (
                       <div className="text-[#991B1B]">
-                        <strong>Rechazados por pertenecer a otra entidad:</strong>{' '}
-                        <span className="gov-mono">
+                        Otra entidad:{' '}
+                        <span className="sses-mono">
                           {lastLinkResult.otraEntidad.join(', ')}
                         </span>
                       </div>
                     )}
                     {lastLinkResult.yaVinculados.length > 0 && (
-                      <div className="text-slate-600">
-                        <strong>Ya vinculados (omitidos):</strong>{' '}
-                        <span className="gov-mono">
+                      <div className="text-[#64748B]">
+                        Omitidos:{' '}
+                        <span className="sses-mono">
                           {lastLinkResult.yaVinculados.join(', ')}
                         </span>
                       </div>
                     )}
                     {lastLinkResult.noEncontrados.length > 0 && (
                       <div className="text-[#92400E]">
-                        <strong>No encontrados en catálogo:</strong>{' '}
-                        <span className="gov-mono">
+                        No hallados:{' '}
+                        <span className="sses-mono">
                           {lastLinkResult.noEncontrados.join(', ')}
                         </span>
                       </div>

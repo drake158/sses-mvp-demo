@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { App } from './App';
+import { AccessibilityProvider } from './context/AccessibilityContext';
 import { SsesProvider } from './context/SsesContext';
 import './index.css';
 
@@ -11,8 +12,10 @@ if (!rootEl) {
 
 ReactDOM.createRoot(rootEl).render(
   <React.StrictMode>
-    <SsesProvider>
-      <App />
-    </SsesProvider>
+    <AccessibilityProvider>
+      <SsesProvider>
+        <App />
+      </SsesProvider>
+    </AccessibilityProvider>
   </React.StrictMode>
 );

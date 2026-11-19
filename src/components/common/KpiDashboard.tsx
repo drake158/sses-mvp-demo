@@ -1,126 +1,103 @@
 import React from 'react';
 import {
-  AlertCircle,
   AlertTriangle,
-  CheckCircle2,
   ClipboardList,
   TrendingUp,
   Users,
 } from 'lucide-react';
 import type { KpiResumen } from '../../types/sses';
+import { StatusBadge } from './StatusBadge';
 
 interface KpiDashboardProps {
   kpis: KpiResumen;
-  titulo?: string;
 }
 
-export const KpiDashboard: React.FC<KpiDashboardProps> = ({
-  kpis,
-  titulo = 'Tablero de Cumplimiento y Alertas de Atraso',
-}) => {
+export const KpiDashboard: React.FC<KpiDashboardProps> = ({ kpis }) => {
   return (
-    <section className="space-y-6">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-lg font-bold text-men-navy">{titulo}</h2>
-        <span className="gov-mono text-xs text-[#64748B]">
-          {kpis.totalSemanas} semanas monitoreadas
-        </span>
-      </div>
-
-      {/* 4 KPI Cards — 8pt Grid (p-6, gap-6) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="gov-card p-6 flex flex-col justify-between gap-4">
+    <section aria-label="Indicadores de cumplimiento" className="space-y-6">
+      {/* 4 Direct KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="sses-card p-6 flex flex-col justify-between gap-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-[0.05em] text-[#64748B]">
+            <span className="text-xs font-medium text-[#64748B]">
               Estrategias
             </span>
-            <div className="w-9 h-9 rounded-lg bg-[#F1F5F9] text-men-navy flex items-center justify-center">
-              <ClipboardList className="w-4 h-4" />
-            </div>
+            <ClipboardList
+              aria-hidden="true"
+              className="h-4 w-4 text-[#64748B]"
+              strokeWidth={1.5}
+            />
           </div>
           <div>
-            <div className="font-heading text-3xl font-bold text-men-navy tabular-nums">
+            <div className="sses-kpi-value text-3xl text-[#0F172A]">
               {kpis.totalEstrategias}
             </div>
-            <div className="mt-1.5 text-xs text-[#64748B] flex items-center gap-2">
-              <span className="font-medium text-[#065F46]">
-                {kpis.estrategiasConEstudiantes} activas
-              </span>
-              <span>·</span>
-              <span className="font-medium text-men-accent">
-                {kpis.estrategiasSinEstudiantes} editables
-              </span>
+            <div className="mt-1.5 text-xs text-[#64748B]">
+              {kpis.estrategiasConEstudiantes} bloqueadas ·{' '}
+              {kpis.estrategiasSinEstudiantes} editables
             </div>
           </div>
         </div>
 
-        <div className="gov-card p-6 flex flex-col justify-between gap-4">
+        <div className="sses-card p-6 flex flex-col justify-between gap-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-[0.05em] text-[#64748B]">
+            <span className="text-xs font-medium text-[#64748B]">
               Estudiantes
             </span>
-            <div className="w-9 h-9 rounded-lg bg-sky-50 text-men-accent flex items-center justify-center">
-              <Users className="w-4 h-4" />
-            </div>
+            <Users
+              aria-hidden="true"
+              className="h-4 w-4 text-[#64748B]"
+              strokeWidth={1.5}
+            />
           </div>
           <div>
-            <div className="font-heading text-3xl font-bold text-men-navy tabular-nums">
+            <div className="sses-kpi-value text-3xl text-[#0F172A]">
               {kpis.totalEstudiantesVinculados}
             </div>
-            <div className="mt-1.5 text-xs text-[#64748B]">
-              Vinculados en estrategias MEN
-            </div>
+            <div className="mt-1.5 text-xs text-[#64748B]">Vinculados</div>
           </div>
         </div>
 
-        <div className="gov-card p-6 flex flex-col justify-between gap-4">
+        <div className="sses-card p-6 flex flex-col justify-between gap-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-[0.05em] text-[#64748B]">
+            <span className="text-xs font-medium text-[#64748B]">
               Cumplimiento
             </span>
-            <div className="w-9 h-9 rounded-lg bg-[#ECFDF5] text-[#065F46] flex items-center justify-center">
-              <TrendingUp className="w-4 h-4" />
-            </div>
+            <TrendingUp
+              aria-hidden="true"
+              className="h-4 w-4 text-[#64748B]"
+              strokeWidth={1.5}
+            />
           </div>
           <div>
             <div className="flex items-baseline gap-2">
-              <span className="font-heading text-3xl font-bold text-[#065F46] tabular-nums">
+              <span className="sses-kpi-value text-3xl text-[#0F172A]">
                 {kpis.porcentajeCumplimiento}%
               </span>
-              <span className="gov-mono text-xs text-[#64748B]">
-                ({kpis.semanasRealizadas}/{kpis.totalSemanas})
+              <span className="sses-mono text-xs text-[#64748B]">
+                {kpis.semanasRealizadas}/{kpis.totalSemanas}
               </span>
             </div>
-            <div className="mt-2.5 w-full bg-[#F1F5F9] rounded-full h-1.5 overflow-hidden">
+            <div className="mt-2.5 h-1 w-full rounded-full bg-[#E5E7EB] overflow-hidden">
               <div
-                className="bg-[#065F46] h-1.5 rounded-full transition-all duration-300 ease-out"
+                className="h-1 rounded-full bg-[#1E3A8A] transition-all duration-300"
                 style={{ width: `${kpis.porcentajeCumplimiento}%` }}
               />
             </div>
           </div>
         </div>
 
-        <div className="gov-card p-6 flex flex-col justify-between gap-4">
+        <div className="sses-card p-6 flex flex-col justify-between gap-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-[0.05em] text-[#64748B]">
-              Alertas
-            </span>
-            <div
-              className={`w-9 h-9 rounded-lg flex items-center justify-center ${
-                kpis.totalAlertas > 0
-                  ? 'bg-[#FEF2F2] text-[#991B1B]'
-                  : 'bg-[#ECFDF5] text-[#065F46]'
-              }`}
-            >
-              <AlertTriangle className="w-4 h-4" />
-            </div>
+            <span className="text-xs font-medium text-[#64748B]">Alertas</span>
+            <AlertTriangle
+              aria-hidden="true"
+              className="h-4 w-4 text-[#64748B]"
+              strokeWidth={1.5}
+            />
           </div>
           <div>
-            <div
-              className={`font-heading text-3xl font-bold tabular-nums ${
-                kpis.totalAlertas > 0 ? 'text-[#991B1B]' : 'text-[#065F46]'
-              }`}
-            >
+            <div className="sses-kpi-value text-3xl text-[#0F172A]">
               {kpis.totalAlertas}
             </div>
             <div className="mt-1.5 text-xs text-[#64748B]">
@@ -131,65 +108,40 @@ export const KpiDashboard: React.FC<KpiDashboardProps> = ({
         </div>
       </div>
 
-      {/* Delay Alerts List */}
-      <div className="gov-card overflow-hidden">
-        <div className="px-6 py-4 bg-[#F1F5F9] border-b border-[#E2E8F0] flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-xs font-semibold uppercase tracking-[0.05em] text-[#64748B]">
-            Alertas de Atraso y Novedades Operativas
-          </h3>
-          <span
-            className={
-              kpis.totalAlertas > 0 ? 'gov-pill-danger' : 'gov-pill-success'
-            }
-          >
-            {kpis.totalAlertas === 0
-              ? 'Sin alertas críticas'
-              : `${kpis.totalAlertas} alerta(s) activa(s)`}
-          </span>
+      {/* Concise Alerts List */}
+      <div className="sses-card overflow-hidden">
+        <div className="px-6 py-4 border-b border-[#E5E7EB] flex items-center justify-between gap-3">
+          <h2 className="text-sm font-medium text-[#0F172A]">Alertas</h2>
+          <StatusBadge tone={kpis.totalAlertas > 0 ? 'danger' : 'success'}>
+            {kpis.totalAlertas === 0 ? 'Al día' : `${kpis.totalAlertas} activas`}
+          </StatusBadge>
         </div>
 
         {kpis.alertas.length === 0 ? (
-          <div className="p-6 flex items-center gap-3 text-sm text-[#065F46]">
-            <CheckCircle2 className="w-5 h-5 shrink-0" />
-            <span>
-              Todas las semanas de seguimiento se encuentran al día sin atrasos
-              ni novedades pendientes.
-            </span>
+          <div className="px-6 py-5 text-xs text-[#64748B]">
+            Sin atrasos ni novedades.
           </div>
         ) : (
-          <ul className="divide-y divide-[#E2E8F0]">
+          <ul className="divide-y divide-[#E5E7EB]">
             {kpis.alertas.map((alerta) => {
               const isCritical = alerta.severidad === 'CRITICA';
               return (
                 <li
                   key={alerta.id}
-                  className="px-6 py-4 flex flex-col sm:flex-row sm:items-start gap-3 transition-colors duration-150 hover:bg-[#F8FAFC]"
+                  className="px-6 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 transition-colors duration-150 hover:bg-[#FAFAFA]"
                 >
-                  <div className="flex items-start gap-3 flex-1 min-w-0">
-                    {isCritical ? (
-                      <AlertCircle className="w-4 h-4 text-[#991B1B] mt-1 shrink-0" />
-                    ) : (
-                      <AlertTriangle className="w-4 h-4 text-[#92400E] mt-1 shrink-0" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-medium text-sm text-men-navy">
-                          {alerta.estrategiaNombre}
-                        </span>
-                        <span
-                          className={
-                            isCritical ? 'gov-pill-danger' : 'gov-pill-warning'
-                          }
-                        >
-                          {isCritical ? 'Atraso crítico' : 'Novedad'}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-600 mt-1">
-                        {alerta.detalle}
-                      </p>
-                    </div>
+                  <div className="flex flex-wrap items-center gap-2.5 min-w-0">
+                    <StatusBadge tone={isCritical ? 'danger' : 'warning'}>
+                      {isCritical ? 'Crítica' : 'Novedad'}
+                    </StatusBadge>
+                    <span className="text-sm font-medium text-[#0F172A] truncate">
+                      {alerta.estrategiaNombre}
+                    </span>
+                    <span className="text-xs text-[#64748B] truncate">
+                      {alerta.detalle}
+                    </span>
                   </div>
-                  <span className="gov-mono text-xs text-[#64748B] shrink-0 pl-7 sm:pl-0">
+                  <span className="sses-mono text-xs text-[#64748B] shrink-0">
                     {alerta.fechaReferencia}
                   </span>
                 </li>

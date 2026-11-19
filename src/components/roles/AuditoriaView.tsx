@@ -1,13 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import {
-  AlertTriangle,
-  CheckCircle2,
   ChevronDown,
   ChevronUp,
-  Filter,
   FlaskConical,
   Link2,
-  ShieldAlert,
   ShieldCheck,
 } from 'lucide-react';
 import { useSses } from '../../context/SsesContext';
@@ -16,6 +12,7 @@ import type {
   RolUsuario,
   TipoAccionAuditoria,
 } from '../../types/sses';
+import { StatusBadge } from '../common/StatusBadge';
 
 const ROLES_FILTER: Array<{ value: 'TODOS' | RolUsuario; label: string }> = [
   { value: 'TODOS', label: 'Todos los roles' },
@@ -86,110 +83,91 @@ export const AuditoriaView: React.FC = () => {
     if (res) {
       setIntegrityResult(null);
       setTamperNotice(
-        `Alteración demostrativa inyectada en ${res.alteredEntryId} sin recalcular su hash SHA-256. Presione "Verificar Integridad de Cadena" para comprobar la detección criptográfica (reversible con "Restaurar datos de fábrica").`
+        `Alteración inyectada en ${res.alteredEntryId}. Ejecute "Verificar cadena" para detectarla.`
       );
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header + Integrity Verification & Demo Tamper Controls */}
-      <header className="gov-card p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div className="space-y-1.5">
-          <span className="gov-pill-neutral">
-            Perfil 4 · Oficina de Tecnología (Auditoría)
-          </span>
-          <h1 className="text-2xl font-bold text-men-navy">
-            Registro de Auditoría Inmutable (<code className="gov-mono">audit_log</code>) y Cadena SHA-256
+    <div className="space-y-8">
+      {/* Minimal Header */}
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-2xl font-semibold tracking-[-0.025em] text-[#0F172A]">
+            Auditoría
           </h1>
-          <p className="text-sm text-slate-600 max-w-3xl">
-            Historial <em>append-only</em> con valores JSON anteriores frente a
-            nuevos y encadenamiento criptográfico real vía Web Crypto API (
-            <code className="gov-mono text-xs">crypto.subtle.digest</code>).
-          </p>
+          <StatusBadge
+            tone="neutral"
+            mono
+            title="Registro append-only con encadenamiento SHA-256 mediante Web Crypto API"
+          >
+            SHA-256 · {state.auditLog.length}
+          </StatusBadge>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 shrink-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={handleSimulateTamper}
+            aria-label="Simular alteración de auditoría"
+            title="Altera un registro sin recalcular su hash para probar la detección criptográfica"
+            className="sses-btn-secondary text-xs"
+          >
+            <FlaskConical className="h-3.5 w-3.5 text-[#D97706]" strokeWidth={1.5} />
+            <span>Simular alteración</span>
+          </button>
+
           <button
             type="button"
             onClick={handleVerifyChain}
             disabled={isVerifying}
-            className="gov-btn-primary"
+            aria-label="Verificar integridad de la cadena SHA-256"
+            className="sses-btn-primary text-xs"
           >
-            <ShieldCheck className="w-4 h-4" />
-            <span>
-              {isVerifying
-                ? 'Verificando cadena...'
-                : 'Verificar Integridad de Cadena'}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleSimulateTamper}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#FFFBEB] hover:bg-amber-100 text-[#92400E] border border-[#FDE68A] text-xs font-semibold transition-all duration-150 ease-in-out"
-            title="Botón auxiliar de demostración (FR-027): altera un registro para probar la detección criptográfica"
-          >
-            <FlaskConical className="w-4 h-4" />
-            <span>Simular alteración (Demo)</span>
+            <ShieldCheck className="h-3.5 w-3.5" strokeWidth={1.5} />
+            <span>{isVerifying ? 'Verificando...' : 'Verificar cadena'}</span>
           </button>
         </div>
       </header>
 
-      {/* Tamper Simulation Info Notice */}
+      {/* Tamper Notice */}
       {tamperNotice && !integrityResult && (
-        <div
-          role="status"
-          className="gov-banner-warning text-xs flex items-start gap-3"
-        >
-          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-          <span>{tamperNotice}</span>
+        <div role="status" className="sses-notice-warning">
+          {tamperNotice}
         </div>
       )}
 
-      {/* Integrity Verdict Banner (4px Left Semantic Accent Bar) */}
+      {/* Integrity Verdict */}
       {integrityResult && (
         <div
           role="status"
-          className={`${
-            integrityResult.valid ? 'gov-banner-success' : 'gov-banner-danger'
-          } p-5 flex items-start gap-3.5`}
+          className={
+            integrityResult.valid
+              ? 'sses-notice-success flex flex-wrap items-center justify-between gap-2'
+              : 'sses-notice-danger flex flex-wrap items-center justify-between gap-2'
+          }
         >
-          {integrityResult.valid ? (
-            <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
-          ) : (
-            <ShieldAlert className="w-5 h-5 shrink-0 mt-0.5" />
+          <span className="font-medium">
+            {integrityResult.valid
+              ? `Cadena íntegra · ${integrityResult.totalVerified}/${state.auditLog.length} verificados`
+              : `Integridad comprometida · ${integrityResult.brokenEntryId}`}
+          </span>
+          {!integrityResult.valid && integrityResult.reason && (
+            <span className="text-xs">{integrityResult.reason}</span>
           )}
-          <div className="space-y-1">
-            <div className="font-heading text-base font-bold">
-              {integrityResult.valid
-                ? `Cadena Criptográfica Íntegra (${integrityResult.totalVerified} de ${state.auditLog.length} registros verificados)`
-                : `Integridad Comprometida — Alteración detectada en ${integrityResult.brokenEntryId}`}
-            </div>
-            <p className="text-xs leading-relaxed">
-              {integrityResult.valid
-                ? 'Todos los registros desde el bloque génesis hasta el evento más reciente coinciden exactamente con sus digests SHA-256 encadenados.'
-                : `${integrityResult.reason} Puede restablecer un escenario íntegro desde "Restaurar datos de fábrica" en la barra superior.`}
-            </p>
-          </div>
         </div>
       )}
 
       {/* Filters Toolbar */}
-      <div className="gov-card p-4 flex flex-wrap items-center justify-between gap-4">
+      <div className="sses-card px-6 py-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-men-navy">
-            <Filter className="w-4 h-4 text-men-accent" />
-            <span>Filtros:</span>
-          </div>
-
           <select
             aria-label="Filtrar por rol"
             value={rolFilter}
             onChange={(e) =>
               setRolFilter(e.target.value as 'TODOS' | RolUsuario)
             }
-            className="gov-input !w-auto text-xs py-1.5"
+            className="sses-input !w-auto text-xs py-1.5"
           >
             {ROLES_FILTER.map((r) => (
               <option key={r.value} value={r.value}>
@@ -204,7 +182,7 @@ export const AuditoriaView: React.FC = () => {
             onChange={(e) =>
               setAccionFilter(e.target.value as 'TODAS' | TipoAccionAuditoria)
             }
-            className="gov-input !w-auto gov-mono text-xs py-1.5"
+            className="sses-input !w-auto sses-mono text-xs py-1.5"
           >
             {ACCIONES_FILTER.map((a) => (
               <option key={a.value} value={a.value}>
@@ -214,21 +192,13 @@ export const AuditoriaView: React.FC = () => {
           </select>
         </div>
 
-        <div className="text-xs text-[#64748B]">
-          Mostrando{' '}
-          <strong className="gov-mono text-men-navy">
-            {filteredEntries.length}
-          </strong>{' '}
-          de{' '}
-          <strong className="gov-mono text-men-navy">
-            {state.auditLog.length}
-          </strong>{' '}
-          eventos inmutables
-        </div>
+        <span className="sses-mono text-xs text-[#64748B]">
+          {filteredEntries.length} / {state.auditLog.length}
+        </span>
       </div>
 
-      {/* Append-Only Audit Log List */}
-      <div className="space-y-4">
+      {/* Audit Log Entries */}
+      <div className="space-y-3">
         {filteredEntries.map((entry) => {
           const isExpanded = expandedId === entry.id;
           const isBroken = integrityResult?.brokenEntryId === entry.id;
@@ -236,51 +206,50 @@ export const AuditoriaView: React.FC = () => {
           return (
             <article
               key={entry.id}
-              className={`gov-card overflow-hidden transition-all duration-150 ${
-                isBroken ? 'border-l-4 border-l-[#DC2626] bg-[#FEF2F2]/20' : ''
+              className={`sses-card overflow-hidden ${
+                isBroken ? 'border-[#DC2626]' : ''
               }`}
             >
-              <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="space-y-2 min-w-0">
+              <div className="px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="space-y-1.5 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="gov-mono px-2.5 py-0.5 rounded-md bg-men-navy text-white text-xs font-semibold">
+                    <span className="sses-mono text-xs font-medium text-[#1E3A8A]">
                       #{entry.secuencia} · {entry.id}
                     </span>
-                    <span className="gov-pill-info">{entry.rol}</span>
-                    <span className="gov-pill-neutral gov-mono">
+                    <StatusBadge tone="info">{entry.rol}</StatusBadge>
+                    <span className="sses-mono text-xs text-[#0F172A]">
                       {entry.accion}
                     </span>
                     {isBroken && (
-                      <span className="gov-pill-danger font-semibold">
-                        REGISTRO COMPROMETIDO
-                      </span>
+                      <StatusBadge tone="danger">Comprometido</StatusBadge>
                     )}
                   </div>
 
-                  <div className="text-xs text-slate-600 flex flex-wrap items-center gap-x-4 gap-y-1">
+                  <div className="text-xs text-[#64748B] flex flex-wrap items-center gap-x-4 gap-y-1">
                     <span>
-                      <strong className="text-slate-800">Recurso:</strong>{' '}
-                      {entry.entidadAfectada} (
-                      <code className="gov-mono text-men-navy">
+                      {entry.entidadAfectada}{' '}
+                      <code className="sses-mono text-[#0F172A]">
                         {entry.registroId}
                       </code>
-                      )
                     </span>
-                    <span>
-                      <strong className="text-slate-800">Timestamp:</strong>{' '}
-                      <span className="gov-mono">
-                        {new Date(entry.timestamp).toLocaleString('es-CO')}
-                      </span>
+                    <span className="sses-mono">
+                      {new Date(entry.timestamp).toLocaleString('es-CO')}
                     </span>
                   </div>
 
-                  <div className="gov-mono text-[11px] text-[#64748B] flex flex-wrap items-center gap-x-4 gap-y-1">
-                    <span className="inline-flex items-center gap-1">
-                      <Link2 className="w-3 h-3 text-slate-400" />
-                      Prev: {entry.previousHash.slice(0, 14)}…
+                  <div className="sses-mono text-[11px] text-[#64748B] flex flex-wrap items-center gap-x-4 gap-y-1">
+                    <span
+                      title={`previousHash: ${entry.previousHash}`}
+                      className="inline-flex items-center gap-1"
+                    >
+                      <Link2 className="h-3 w-3" strokeWidth={1.5} />
+                      {entry.previousHash.slice(0, 12)}…
                     </span>
-                    <span className="text-men-navy font-medium">
-                      SHA-256: {entry.hash.slice(0, 24)}…
+                    <span
+                      title={`hash: ${entry.hash}`}
+                      className="text-[#0F172A]"
+                    >
+                      SHA-256: {entry.hash.slice(0, 20)}…
                     </span>
                   </div>
                 </div>
@@ -288,56 +257,58 @@ export const AuditoriaView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setExpandedId(isExpanded ? null : entry.id)}
-                  className="gov-btn-secondary text-xs shrink-0 self-start md:self-center"
+                  aria-expanded={isExpanded}
+                  aria-label={
+                    isExpanded
+                      ? `Ocultar detalle de ${entry.id}`
+                      : `Ver detalle JSON de ${entry.id}`
+                  }
+                  className="sses-btn-ghost text-xs shrink-0 self-start md:self-center"
                 >
-                  <span>
-                    {isExpanded
-                      ? 'Ocultar JSON y hashes'
-                      : 'Ver JSON Anterior vs. Nuevo'}
-                  </span>
+                  <span>{isExpanded ? 'Ocultar' : 'JSON'}</span>
                   {isExpanded ? (
-                    <ChevronUp className="w-3.5 h-3.5" />
+                    <ChevronUp className="h-3.5 w-3.5" strokeWidth={1.5} />
                   ) : (
-                    <ChevronDown className="w-3.5 h-3.5" />
+                    <ChevronDown className="h-3.5 w-3.5" strokeWidth={1.5} />
                   )}
                 </button>
               </div>
 
               {isExpanded && (
-                <div className="px-6 pb-6 pt-4 border-t border-[#E2E8F0] bg-[#F8FAFC] space-y-4">
+                <div className="px-6 pb-6 pt-4 border-t border-[#E5E7EB] bg-[#FAFAFA] space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <div className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[#64748B] mb-1.5">
-                        Valores Anteriores (JSON)
+                      <div className="text-xs font-medium text-[#64748B] mb-1.5">
+                        Anterior
                       </div>
-                      <pre className="gov-mono p-4 rounded-lg bg-white border border-[#E2E8F0] text-[11px] text-slate-700 overflow-x-auto max-h-56">
+                      <pre className="sses-mono p-4 rounded-lg bg-white border border-[#E5E7EB] text-[11px] text-[#64748B] overflow-x-auto max-h-56">
                         {JSON.stringify(entry.valoresAnteriores, null, 2)}
                       </pre>
                     </div>
                     <div>
-                      <div className="text-[11px] font-semibold uppercase tracking-[0.05em] text-men-navy mb-1.5">
-                        Valores Nuevos (JSON)
+                      <div className="text-xs font-medium text-[#0F172A] mb-1.5">
+                        Nuevo
                       </div>
-                      <pre className="gov-mono p-4 rounded-lg bg-white border border-[#E2E8F0] text-[11px] text-men-navy overflow-x-auto max-h-56">
+                      <pre className="sses-mono p-4 rounded-lg bg-white border border-[#E5E7EB] text-[11px] text-[#0F172A] overflow-x-auto max-h-56">
                         {JSON.stringify(entry.valoresNuevos, null, 2)}
                       </pre>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[11px]">
-                    <div className="p-3 rounded-lg bg-white border border-[#E2E8F0]">
-                      <div className="text-[#64748B] font-semibold uppercase tracking-[0.05em] text-[10px] mb-1">
-                        previousHash (SHA-256 previo)
+                    <div className="p-3 rounded-lg bg-white border border-[#E5E7EB]">
+                      <div className="text-[#64748B] font-medium mb-1">
+                        previousHash
                       </div>
-                      <div className="gov-mono break-all text-slate-600">
+                      <div className="sses-mono break-all text-[#64748B]">
                         {entry.previousHash}
                       </div>
                     </div>
-                    <div className="p-3 rounded-lg bg-white border border-[#E2E8F0]">
-                      <div className="text-[#64748B] font-semibold uppercase tracking-[0.05em] text-[10px] mb-1">
-                        hash (SHA-256 encadenado de este registro)
+                    <div className="p-3 rounded-lg bg-white border border-[#E5E7EB]">
+                      <div className="text-[#64748B] font-medium mb-1">
+                        hash
                       </div>
-                      <div className="gov-mono break-all text-men-navy font-semibold">
+                      <div className="sses-mono break-all text-[#0F172A]">
                         {entry.hash}
                       </div>
                     </div>

@@ -4,18 +4,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        'men-navy': '#1B365D',
-        'men-navy-hover': '#132744',
+        'men-navy': '#1E3A8A',
+        'men-navy-hover': '#172E6E',
         'men-accent': '#0284C7',
         'men-accent-hover': '#0369A1',
-        'men-blue': '#0066CC',
-        'men-emerald': '#00875A',
-        'men-amber': '#D97706',
-        'men-red': '#DC2626',
-        'men-bg': '#F8FAFC',
-        'gov-border': '#E2E8F0',
+        'men-bg': '#FAFAFA',
+        'gov-border': '#E5E7EB',
         'gov-surface': '#FFFFFF',
-        'gov-table-head': '#F1F5F9',
+        'gov-ink': '#0F172A',
         'gov-muted': '#64748B',
       },
       fontFamily: {
@@ -43,10 +39,6 @@ export default {
           'Consolas',
           'monospace',
         ],
-      },
-      boxShadow: {
-        'gov-card': '0 1px 3px rgba(15, 23, 42, 0.04)',
-        'gov-card-hover': '0 8px 20px -4px rgba(15, 23, 42, 0.08)',
       },
     },
   },

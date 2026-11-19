@@ -1,49 +1,28 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  AlertTriangle,
   Building2,
-  CheckCircle2,
+  Check,
+  ChevronDown,
   FileSearch,
   GraduationCap,
   RotateCcw,
   ShieldCheck,
-  Wifi,
-  WifiOff,
   X,
+  type LucideIcon,
 } from 'lucide-react';
 import { useSses } from '../../context/SsesContext';
 import type { RolUsuario } from '../../types/sses';
+import { AccessibilityMenu } from '../common/AccessibilityMenu';
 
 const ROLE_OPTIONS: Array<{
   rol: RolUsuario;
   label: string;
-  shortLabel: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: LucideIcon;
 }> = [
-  {
-    rol: 'FUNCIONARIO_MEN',
-    label: 'Funcionario MEN',
-    shortLabel: 'MEN',
-    icon: Building2,
-  },
-  {
-    rol: 'TUTOR',
-    label: 'Tutor',
-    shortLabel: 'Tutor',
-    icon: GraduationCap,
-  },
-  {
-    rol: 'ENTE_CONTROL',
-    label: 'Ente de Control',
-    shortLabel: 'Control',
-    icon: ShieldCheck,
-  },
-  {
-    rol: 'OFICINA_TECNOLOGIA',
-    label: 'Oficina de Tecnología',
-    shortLabel: 'Auditoría',
-    icon: FileSearch,
-  },
+  { rol: 'FUNCIONARIO_MEN', label: 'Funcionario MEN', icon: Building2 },
+  { rol: 'TUTOR', label: 'Tutor Territorial', icon: GraduationCap },
+  { rol: 'ENTE_CONTROL', label: 'Ente de Control', icon: ShieldCheck },
+  { rol: 'OFICINA_TECNOLOGIA', label: 'Oficina de Tecnología', icon: FileSearch },
 ];
 
 export const Navbar: React.FC = () => {
@@ -55,10 +34,48 @@ export const Navbar: React.FC = () => {
     restaurarDatosDeFabrica,
   } = useSses();
 
+  const [roleMenuOpen, setRoleMenuOpen] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
   const [bannerMessage, setBannerMessage] = useState<string | null>(null);
+
+  const roleDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!roleMenuOpen) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setRoleMenuOpen(false);
+    };
+    const onMouseDown = (e: MouseEvent) => {
+      if (
+        roleDropdownRef.current &&
+        !roleDropdownRef.current.contains(e.target as Node)
+      ) {
+        setRoleMenuOpen(false);
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('mousedown', onMouseDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('mousedown', onMouseDown);
+    };
+  }, [roleMenuOpen]);
+
+  useEffect(() => {
+    if (!showResetModal) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isResetting) setShowResetModal(false);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [showResetModal, isResetting]);
+
+  const activeRoleConfig =
+    ROLE_OPTIONS.find((r) => r.rol === rolActivo) ?? ROLE_OPTIONS[0];
+  const ActiveRoleIcon = activeRoleConfig.icon;
 
   const handleToggleOffline = async () => {
     if (isToggling) return;
@@ -67,9 +84,9 @@ export const Navbar: React.FC = () => {
       const syncResult = await toggleModoOffline();
       if (syncResult && syncResult.syncedCount > 0) {
         setBannerMessage(
-          `Conexión restablecida: ${syncResult.syncedCount} operación(es) sincronizada(s) automáticamente sin duplicados.`
+          `En línea · ${syncResult.syncedCount} operación(es) sincronizada(s)`
         );
-        window.setTimeout(() => setBannerMessage(null), 5000);
+        window.setTimeout(() => setBannerMessage(null), 4500);
       }
     } finally {
       setIsToggling(false);
@@ -81,10 +98,8 @@ export const Navbar: React.FC = () => {
     try {
       await restaurarDatosDeFabrica();
       setShowResetModal(false);
-      setBannerMessage(
-        'Datos de fábrica de Colombia restaurados correctamente con cadena SHA-256 íntegra.'
-      );
-      window.setTimeout(() => setBannerMessage(null), 4500);
+      setBannerMessage('Datos iniciales restaurados · Cadena SHA-256 íntegra');
+      window.setTimeout(() => setBannerMessage(null), 4000);
     } finally {
       setIsResetting(false);
     }
@@ -92,197 +107,205 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-30 bg-white border-b border-[#E2E8F0] shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
-        {/* Subtle 3px MEN Identity Accent Bar */}
-        <div className="h-[3px] bg-men-navy w-full" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="min-h-[64px] py-2 lg:py-0 flex flex-wrap items-center justify-between gap-3">
-            {/* Institutional Identity */}
+      <header className="sticky top-0 z-30 bg-white border-b border-[#E5E7EB]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-3">
+          {/* Left: Compact Logo + Clean Role Dropdown */}
+          <div className="flex items-center gap-3 min-w-0">
             <button
               type="button"
               onClick={() => seleccionarRol(null)}
-              className="flex items-center gap-3 text-left group focus:outline-none rounded-lg focus:ring-2 focus:ring-men-accent/40 pr-2"
-              title="Volver al Selector Interactivo de Rol"
+              aria-label="Volver al selector de rol"
+              title="Selector de rol"
+              className="font-heading text-sm font-semibold tracking-[-0.025em] text-[#1E3A8A] hover:text-[#0284C7] transition-colors duration-150 rounded px-1 py-0.5 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0284C7]"
             >
-              <div className="w-9 h-9 rounded-lg bg-men-navy text-white flex items-center justify-center font-heading font-bold text-xs tracking-tight transition-colors duration-150 group-hover:bg-men-navy-hover">
-                MEN
-              </div>
-              <div className="leading-tight">
-                <div className="font-heading text-sm font-bold text-men-navy tracking-tight">
-                  SSES
-                </div>
-                <div className="text-[11px] text-[#64748B] hidden sm:block">
-                  Ministerio de Educación
-                </div>
-              </div>
+              SSES · MEN
             </button>
 
-            {/* Segmented Role Switcher */}
-            <nav
-              aria-label="Selector rápido de rol"
-              className="order-3 lg:order-2 w-full lg:w-auto flex items-center gap-1 bg-[#F1F5F9] p-1 rounded-lg border border-[#E2E8F0] overflow-x-auto"
-            >
-              {ROLE_OPTIONS.map((item) => {
-                const Icon = item.icon;
-                const isActive = rolActivo === item.rol;
-                return (
-                  <button
-                    key={item.rol}
-                    type="button"
-                    onClick={() => seleccionarRol(item.rol)}
-                    className={`flex-1 lg:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-all duration-150 ease-in-out ${
-                      isActive
-                        ? 'bg-men-navy text-white shadow-sm'
-                        : 'text-slate-600 hover:text-men-navy hover:bg-white/80'
-                    }`}
-                  >
-                    <Icon className="w-3.5 h-3.5 shrink-0" />
-                    <span className="hidden xl:inline">{item.label}</span>
-                    <span className="xl:hidden">{item.shortLabel}</span>
-                  </button>
-                );
-              })}
-            </nav>
+            <span
+              aria-hidden="true"
+              className="h-4 w-px bg-[#E5E7EB] shrink-0"
+            />
 
-            {/* Right Context Controls: Segmented Network Status + Factory Reset */}
-            <div className="order-2 lg:order-3 flex items-center gap-2">
+            {/* Role Dropdown */}
+            <div ref={roleDropdownRef} className="relative">
               <button
                 type="button"
-                onClick={handleToggleOffline}
-                disabled={isToggling}
-                aria-pressed={state.isOffline}
-                title="Cambiar estado de conectividad (En línea / Sin conexión)"
-                className="inline-flex items-center p-1 rounded-lg bg-[#F1F5F9] border border-[#E2E8F0] transition-all duration-150 ease-in-out hover:border-men-accent focus:outline-none focus:ring-2 focus:ring-men-accent/30 disabled:opacity-60"
+                onClick={() => setRoleMenuOpen((prev) => !prev)}
+                aria-haspopup="menu"
+                aria-expanded={roleMenuOpen}
+                aria-label="Cambiar rol activo"
+                className="inline-flex items-center gap-2 rounded-lg border border-[#E5E7EB] bg-white px-2.5 py-1.5 text-xs font-medium text-[#0F172A] hover:bg-[#FAFAFA] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0284C7] focus-visible:ring-offset-2"
               >
-                <span
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all duration-150 ${
-                    !state.isOffline
-                      ? 'bg-[#ECFDF5] text-[#065F46] border border-[#A7F3D0] shadow-sm'
-                      : 'text-[#64748B] border border-transparent'
-                  }`}
-                >
-                  <Wifi className="w-3.5 h-3.5" />
-                  <span>En línea</span>
+                <ActiveRoleIcon
+                  className="h-3.5 w-3.5 text-[#64748B] shrink-0"
+                  strokeWidth={1.5}
+                />
+                <span className="truncate max-w-[120px] sm:max-w-none">
+                  {activeRoleConfig.label}
                 </span>
-                <span
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all duration-150 ${
-                    state.isOffline
-                      ? 'bg-[#FFFBEB] text-[#92400E] border border-[#FDE68A] shadow-sm'
-                      : 'text-[#64748B] border border-transparent'
-                  }`}
-                >
-                  <WifiOff className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Sin conexión</span>
-                  {state.offlineQueue.length > 0 && (
-                    <span className="gov-mono ml-0.5 px-1.5 py-0.2 rounded-full bg-[#92400E] text-white text-[10px] font-semibold">
-                      {state.offlineQueue.length}
-                    </span>
-                  )}
-                </span>
+                <ChevronDown
+                  className="h-3.5 w-3.5 text-[#64748B] shrink-0"
+                  strokeWidth={1.5}
+                />
               </button>
 
-              <button
-                type="button"
-                onClick={() => setShowResetModal(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-white text-slate-700 border border-[#E2E8F0] hover:border-men-accent hover:text-men-accent transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-men-accent/30"
-                title="Restaurar datos de fábrica"
-              >
-                <RotateCcw className="w-3.5 h-3.5 shrink-0" />
-                <span className="hidden md:inline">Restaurar</span>
-              </button>
+              {roleMenuOpen && (
+                <div
+                  role="menu"
+                  aria-label="Seleccionar perfil"
+                  className="absolute left-0 mt-2 w-56 rounded-xl border border-[#E5E7EB] bg-white p-1.5 z-50"
+                >
+                  {ROLE_OPTIONS.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = rolActivo === item.rol;
+                    return (
+                      <button
+                        key={item.rol}
+                        type="button"
+                        role="menuitemradio"
+                        aria-checked={isActive}
+                        onClick={() => {
+                          seleccionarRol(item.rol);
+                          setRoleMenuOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0284C7] ${
+                          isActive
+                            ? 'bg-[#F0F9FF] text-[#0284C7]'
+                            : 'text-[#0F172A] hover:bg-[#FAFAFA]'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2 min-w-0">
+                          <Icon
+                            className="h-3.5 w-3.5 shrink-0"
+                            strokeWidth={1.5}
+                          />
+                          <span className="truncate">{item.label}</span>
+                        </span>
+                        {isActive && (
+                          <Check
+                            className="h-3.5 w-3.5 shrink-0 text-[#0284C7]"
+                            strokeWidth={1.75}
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
+          </div>
+
+          {/* Right: Network Toggle + Reset + Accessibility */}
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={handleToggleOffline}
+              disabled={isToggling}
+              aria-pressed={state.isOffline}
+              aria-label={
+                state.isOffline
+                  ? 'Modo Offline activo. Cambiar a En línea'
+                  : 'Modo En línea activo. Cambiar a Offline'
+              }
+              title="Alternar conectividad (En línea / Offline)"
+              className={`sses-badge inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0284C7] focus-visible:ring-offset-2 disabled:opacity-50 ${
+                state.isOffline
+                  ? 'border-[#FDE68A] bg-[#FFFBEB] text-[#92400E] hover:border-[#F59E0B]'
+                  : 'border-[#E5E7EB] bg-white text-[#0F172A] hover:bg-[#FAFAFA]'
+              }`}
+            >
+              <span
+                aria-hidden="true"
+                className={`h-1.5 w-1.5 rounded-full ${
+                  state.isOffline ? 'bg-[#D97706]' : 'bg-[#059669]'
+                }`}
+              />
+              <span>{state.isOffline ? 'Offline' : 'En línea'}</span>
+              {state.offlineQueue.length > 0 && (
+                <span className="sses-mono ml-0.5 rounded-full bg-[#D97706] px-1.5 text-[10px] text-white">
+                  {state.offlineQueue.length}
+                </span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowResetModal(true)}
+              aria-label="Restaurar datos de fábrica"
+              title="Restaurar datos iniciales"
+              className="inline-flex items-center justify-center rounded-lg border border-[#E5E7EB] bg-white p-1.5 text-[#64748B] hover:bg-[#FAFAFA] hover:text-[#0F172A] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0284C7] focus-visible:ring-offset-2"
+            >
+              <RotateCcw className="h-3.5 w-3.5" strokeWidth={1.5} />
+            </button>
+
+            <AccessibilityMenu />
           </div>
         </div>
 
-        {/* Soft-Pastel Sync / Reset Notification Strip */}
+        {/* Minimalist Feedback Strip */}
         {bannerMessage && (
-          <div className="bg-[#ECFDF5] text-[#065F46] border-t border-[#A7F3D0] text-xs font-medium px-4 py-2.5">
-            <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          <div
+            role="status"
+            className="border-t border-[#E5E7EB] bg-[#F0FDF4] text-[#166534] text-xs font-medium"
+          >
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between gap-4">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 shrink-0 text-[#065F46]" />
+                <span
+                  aria-hidden="true"
+                  className="h-1.5 w-1.5 rounded-full bg-[#059669]"
+                />
                 <span>{bannerMessage}</span>
               </div>
               <button
                 type="button"
                 onClick={() => setBannerMessage(null)}
-                className="text-[#065F46]/70 hover:text-[#065F46] transition-colors"
-                aria-label="Cerrar aviso"
+                aria-label="Cerrar notificación"
+                className="text-[#166534] hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0284C7] rounded"
               >
-                <X className="w-4 h-4" />
+                <X className="h-3.5 w-3.5" strokeWidth={1.5} />
               </button>
             </div>
           </div>
         )}
       </header>
 
-      {/* Factory Reset Confirmation Modal */}
+      {/* Minimalist Factory Reset Modal */}
       {showResetModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 backdrop-blur-sm p-4 transition-opacity duration-150"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 backdrop-blur-sm p-4"
           role="dialog"
           aria-modal="true"
           aria-labelledby="reset-modal-title"
         >
-          <div className="gov-card max-w-md w-full overflow-hidden shadow-xl">
-            <div className="px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-[#FFFBEB] border border-[#FDE68A] text-[#92400E] flex items-center justify-center">
-                  <AlertTriangle className="w-4 h-4" />
-                </div>
-                <h2
-                  id="reset-modal-title"
-                  className="text-base font-bold text-men-navy"
-                >
-                  Restaurar datos de fábrica
-                </h2>
-              </div>
+          <div className="sses-card max-w-sm w-full overflow-hidden">
+            <div className="px-6 py-4 border-b border-[#E5E7EB] flex items-center justify-between">
+              <h2
+                id="reset-modal-title"
+                className="text-sm font-medium text-[#0F172A]"
+              >
+                Restaurar datos iniciales
+              </h2>
               <button
                 type="button"
                 onClick={() => setShowResetModal(false)}
-                className="text-slate-400 hover:text-slate-600 transition-colors"
-                aria-label="Cerrar"
+                aria-label="Cerrar diálogo"
+                className="text-[#64748B] hover:text-[#0F172A] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0284C7]"
               >
-                <X className="w-5 h-5" />
+                <X className="h-4 w-4" strokeWidth={1.5} />
               </button>
             </div>
 
-            <div className="p-6 space-y-4 text-sm text-slate-600">
-              <p>
-                Esta acción restablecerá el escenario demostrativo a los datos
-                sintéticos iniciales del Ministerio de Educación Nacional:
-              </p>
-              <ul className="space-y-2 text-xs text-slate-600 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-4">
-                <li className="flex items-start gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-men-navy mt-1.5 shrink-0" />
-                  <span>
-                    Reinicia estrategias, vinculaciones, acompañamientos y
-                    reportes al estado base.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-men-navy mt-1.5 shrink-0" />
-                  <span>
-                    Limpia la cola sin conexión y restablece el modo{' '}
-                    <strong className="text-slate-800">En línea</strong>.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-men-navy mt-1.5 shrink-0" />
-                  <span>
-                    Regenera el <code className="gov-mono">audit_log</code> con
-                    una cadena SHA-256 íntegra desde el bloque génesis.
-                  </span>
-                </li>
-              </ul>
+            <div className="p-6 text-sm text-[#64748B]">
+              Se reiniciarán estrategias, acompañamientos, cola offline y la
+              cadena SHA-256 al estado base.
             </div>
 
-            <div className="px-6 py-4 bg-[#F8FAFC] border-t border-[#E2E8F0] flex items-center justify-end gap-3">
+            <div className="px-6 py-4 bg-[#FAFAFA] border-t border-[#E5E7EB] flex items-center justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setShowResetModal(false)}
                 disabled={isResetting}
-                className="gov-btn-secondary text-xs"
+                className="sses-btn-secondary text-xs"
               >
                 Cancelar
               </button>
@@ -290,12 +313,10 @@ export const Navbar: React.FC = () => {
                 type="button"
                 onClick={handleConfirmReset}
                 disabled={isResetting}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-white bg-[#991B1B] hover:bg-red-900 transition-colors duration-150 disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#DC2626] px-3.5 py-2 text-xs font-medium text-white hover:bg-[#B91C1C] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0284C7] focus-visible:ring-offset-2 disabled:opacity-50"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span>
-                  {isResetting ? 'Restaurando...' : 'Confirmar restauración'}
-                </span>
+                <RotateCcw className="h-3.5 w-3.5" strokeWidth={1.5} />
+                <span>{isResetting ? 'Restaurando...' : 'Restaurar'}</span>
               </button>
             </div>
           </div>
